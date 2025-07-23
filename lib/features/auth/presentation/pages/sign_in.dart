@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:mass_management/core/utils/app_layout_helper.dart' show AppLayoutHelper;
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mass_management/core/utils/app_layout_helper.dart'
+    show AppLayoutHelper;
 import 'package:mass_management/core/widgets/custom_app_button.dart';
-import 'package:mass_management/features/auth/presentation/widgets/auth_from.dart' show AuthForm;
+import 'package:mass_management/features/auth/domain/login_req_model.dart';
+import 'package:mass_management/features/auth/presentation/blog/blog_state.dart';
+import 'package:mass_management/features/auth/presentation/blog/login_event_state.dart';
+import 'package:mass_management/features/auth/presentation/blog/login_state.dart';
+import 'package:mass_management/features/auth/presentation/widgets/auth_from.dart'
+    show AuthForm;
 import '../../../../core/utils/app_spacer.dart' show customSpacerHeight;
 import '../../../../utils/app_color.dart';
 import '../../../../utils/app_layout.dart';
@@ -14,7 +21,6 @@ class SignInScreen extends StatelessWidget {
   SignInScreen({super.key});
 
   final _formKey = GlobalKey<FormState>();
-
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +41,11 @@ class SignInScreen extends StatelessWidget {
                   _buildTitleText(context),
                   customSpacerHeight(height: 30),
 
-                  AuthForm( onSubmit: (username, password) {},),
+                  AuthForm(onSubmit: (username, password) {
+
+                    print(username);
+                    
+                  }),
 
                   customSpacerHeight(height: 4),
 
@@ -43,7 +53,7 @@ class SignInScreen extends StatelessWidget {
 
                   customSpacerHeight(height: 30),
 
-                  _buildLoginButton(),
+                  _buildLoginButton(context),
 
                   customSpacerHeight(height: 24),
 
@@ -77,43 +87,55 @@ class SignInScreen extends StatelessWidget {
       children: [
         const Spacer(),
         GestureDetector(
-          onTap: (){},
-          child: Text(
-            "Forgot password?",
-            style: AppStyle.normalText,
-          ),
+          onTap: () {},
+          child: Text("Forgot password?", style: AppStyle.normalText),
         ),
       ],
     );
   }
 
-  Widget _buildLoginButton() {
-    return CustomAppButton(
-      text: "Login",
-      widget: Text(
-        "Login",
-        style: AppStyle.titleText.copyWith(
-          fontWeight: FontWeight.bold,
-          fontSize: ResponsiveLayout.scaleText(Dimensions.fontSizeMid),
+  Widget _buildLoginButton(BuildContext context) {
+    return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
+
+
+      if(state is LoginLoading){
+        return const CircularProgressIndicator();
+      }
+
+      return  CustomAppButton(
+        text: "Login",
+        widget: Text(
+          "Login",
+          style: AppStyle.titleText.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColor.cardColor,
+            fontSize: ResponsiveLayout.scaleText(Dimensions.fontSizeMid),
+          ),
         ),
-      ),
-      buttonRadius: Dimensions.radiusDefault,
-      buttonColor: AppColor.primaryColor,
-      onPressed: _handleLogin,
-    );
+        buttonRadius: Dimensions.radiusDefault,
+        buttonColor: AppColor.primaryColor,
+        onPressed: (){
+          BlocProvider.of<LoginBloc>(context).add(
+            LoginReqEvent(
+              rqModel: LoginReqModel(email: "username", password: "password"),
+            ),
+          );
+        },
+      );
+
+
+    },);
   }
 
-  void _handleLogin() {
 
 
-  }
+
   Widget _buildNewUserCreate(BuildContext context) {
     return createUserAccount(
       context: context,
       firstText: "New user? ",
       endText: AppString.text_sign_up,
-      onAction: () {
-      },
+      onAction: () {},
     );
   }
 }

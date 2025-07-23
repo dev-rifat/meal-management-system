@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mass_management/core/routes/app_page.dart' show AppRouteNames, AppPage;
 import 'package:mass_management/features/auth/presentation/blog/blog_state.dart' show LoginBloc;
 import 'package:mass_management/utils/app_layout.dart' show ResponsiveLayout;
 
 void main() {
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -24,17 +26,16 @@ class MyApp extends StatelessWidget {
               ],
               child: Builder(
                 builder: (context) {
-                  // Safe place to initialize screen sizes
-                  ResponsiveLayout.init(context);
+                  ResponsiveLayout.init(context); // init layout
 
-                  return MaterialApp(
+                  return MaterialApp.router(
                     debugShowCheckedModeBanner: false,
                     title: 'BLoC Auth Example',
+                    routerConfig: AppPage.config(),
                     theme: ThemeData(
-                      fontFamily: "Montserrat", // Optional
+                      fontFamily: "Montserrat",
                       useMaterial3: true,
                     ),
-                    home: Container(),
                   );
                 },
               ),

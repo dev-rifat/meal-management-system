@@ -8,7 +8,7 @@ class LoginBloc extends Bloc<LoginEventState, LoginState> {
 
       try {
         LoginResModel loginResModel = await AuthRepository().login(
-          event.rqModel.username ?? "",
+          event.rqModel.email ?? "",
           event.rqModel.password ?? "",
         );
 

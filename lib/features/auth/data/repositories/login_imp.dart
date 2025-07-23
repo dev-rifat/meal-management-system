@@ -8,7 +8,7 @@ class AuthRepository {
       Uri url = Uri.parse('https://dummyjson.com/auth/login');
 
       LoginReqModel reqModel = LoginReqModel(
-        username: userName,
+        email: userName,
         password: password,
       );
 
@@ -17,6 +17,7 @@ class AuthRepository {
         body: jsonEncode(reqModel.toJson()),
       );
 
+      print("response ${res.body}");
       if (res.statusCode == 200) {
         return LoginResModel.fromJson(jsonDecode(res.body));
       } else {

@@ -25,7 +25,7 @@ Widget userEmailField(controller, {Color? borderColor}) {
       if (value!.isEmpty) {
         return AppString.the_email_field_is_required;
       } else if (value.isEmpty || !RegExp(emailExp()).hasMatch(value)) {
-        return AppString.please_insert_a_valid_email_address.tr;
+        return AppString.please_insert_a_valid_email_address;
       } else {
         return null;
       }
