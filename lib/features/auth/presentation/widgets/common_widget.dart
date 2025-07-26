@@ -1,5 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mass_management/core/routes/app_route.dart' show AppRoute;
 import 'package:mass_management/core/utils/app_spacer.dart' show customSpacerHeight;
 import 'package:mass_management/core/widgets/custom_app_button.dart' show CustomAppButton;
 import '../../../../utils/app_color.dart';
@@ -8,7 +10,8 @@ import '../../../../utils/app_style.dart';
 import '../../../../utils/dimensions.dart';
 
 
-Widget guestButtonLayout() {
+
+Widget guestButtonLayout(BuildContext context) {
   return CustomAppButton(
       text: "",
       widget: Text(
@@ -18,7 +21,8 @@ Widget guestButtonLayout() {
             fontSize: 14,
             fontWeight: FontWeight.bold),
       ),
-      onPressed: () {},
+      onPressed: ()=> context.push(AppRoute.deashboard),
+      
       btnBorderColor: AppColor.primaryColor,
       buttonRadius: Dimensions.radiusDefault,
       buttonColor: AppColor.cardColor);

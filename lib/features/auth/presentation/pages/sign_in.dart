@@ -57,7 +57,7 @@ class SignInScreen extends StatelessWidget {
 
                   customSpacerHeight(height: 24),
 
-                  guestButtonLayout(),
+                  guestButtonLayout(context),
 
                   customSpacerHeight(height: 30),
 

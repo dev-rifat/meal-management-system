@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class StaticTextControllers {
+class InputControllers {
   static final TextEditingController email = TextEditingController();
   static final TextEditingController password = TextEditingController();
   static final TextEditingController username = TextEditingController();
