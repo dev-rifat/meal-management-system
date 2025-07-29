@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mass_management/features/deashboard/pages/dashboard_screen.dart';
+import 'package:mass_management/features/maneger/pages/manager_screen.dart';
 import '../../../../utils/app_color.dart';
 
 
@@ -15,7 +16,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
   final List<Widget> _screens = [
     DashboardScreen(),
-    DashboardScreen(),
+    MessManagerPage(),
     DashboardScreen(),
     DashboardScreen(),
   ];
@@ -37,9 +38,9 @@ class _MainNavScreenState extends State<MainNavScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings_outlined), label: 'Manager'),
           BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Orders'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Me'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My profile'),
         ],
       ),
     );

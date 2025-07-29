@@ -76,57 +76,60 @@ class _BalanceCardSwitcherState extends State<BalanceCardSwitcher> {
     required String expense,
     required Gradient gradient,
   }) {
-    return Container(
-      key: key,
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GestureDetector(
+      onTap: _toggleCard,
+      child: Container(
+        key: key,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      icon: Icon(Icons.swap_horiz, color: Colors.white),
-                      onPressed: _toggleCard,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(color: Colors.white70, fontSize: 16),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                balance,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: Icon(Icons.swap_horiz, color: Colors.white),
+                        onPressed: _toggleCard,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _balanceItem(Icons.arrow_downward, "Deposit", deposit),
-                  _balanceItem(Icons.arrow_upward, "Expense", expense),
-                ],
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  balance,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _balanceItem(Icons.arrow_downward, "Deposit", deposit),
+                    _balanceItem(Icons.arrow_upward, "Expense", expense),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
