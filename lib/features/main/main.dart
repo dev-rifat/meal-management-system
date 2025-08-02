@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mass_management/features/deashboard/pages/dashboard_screen.dart';
 import 'package:mass_management/features/maneger/pages/manager_screen.dart';
+import 'package:mass_management/features/user_list/page/user_list.dart';
 import '../../../../utils/app_color.dart';
+import '../profile/pages/profile.dart' show ProfilePage;
 
 
 class MainNavScreen extends StatefulWidget {
@@ -17,8 +19,8 @@ class _MainNavScreenState extends State<MainNavScreen> {
   final List<Widget> _screens = [
     DashboardScreen(),
     MessManagerPage(),
-    DashboardScreen(),
-    DashboardScreen(),
+    UserListPage(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -39,10 +41,11 @@ class _MainNavScreenState extends State<MainNavScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings_outlined), label: 'Manager'),
-          BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Orders'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_3_sharp), label: 'Members'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My profile'),
         ],
       ),
     );
   }
 }
+

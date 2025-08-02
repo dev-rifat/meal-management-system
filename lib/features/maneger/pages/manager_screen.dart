@@ -3,6 +3,7 @@ import 'package:mass_management/core/widgets/custom_app_bar.dart' show CustomApp
 import 'package:mass_management/features/maneger/widgets/operations.dart';
 import 'package:mass_management/features/maneger/widgets/pie_chat.dart' show ChartData, SummaryChart;
 import 'package:mass_management/features/maneger/widgets/summary_card.dart';
+import 'package:mass_management/utils/app_color.dart';
 
 class MessManagerPage extends StatelessWidget {
   const MessManagerPage({super.key});
@@ -34,19 +35,13 @@ class MessManagerPage extends StatelessWidget {
   }
 
   _appBar() => CustomAppBar(
-    title: "Welcome",
-    centerTitle: false,
-    backgroundColor: Colors.white,
-
-    leading: Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: CircleAvatar(
-        radius: 24,
-        backgroundColor: Colors.blueAccent,
-        child: Icon(Icons.person, color: Colors.white),
-      ),
+    leadingWidth: 300,
+    leading:  Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14.0),
+      child: Text("Manager",style: TextStyle(color: Colors.black,fontWeight: FontWeight.w700,fontSize: 20),),
     ),
-    actions: const [Icon(Icons.notifications_none), SizedBox(width: 10)],
+    backgroundColor: AppColor.backgroundColor,
+
   );
 }
 

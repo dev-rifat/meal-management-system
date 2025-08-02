@@ -5,6 +5,7 @@ import 'package:mass_management/features/auth/presentation/blog/blog_state.dart'
 import 'package:mass_management/utils/app_layout.dart' show ResponsiveLayout;
 
 import 'features/maneger/pages/manager_screen.dart' show MessManagerPage;
+import 'features/user_list/page/user_list.dart';
 
 
 
@@ -42,9 +43,9 @@ class MyApp extends StatelessWidget {
                       useMaterial3: true,
                     ),
                   );
-                  // return MaterialApp(
-                  //   home: MessManagerPage(),
-                  // );
+                  return MaterialApp(
+                    home: UserListPage(),
+                  );
                 },
               ),
             );
