@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mass_management/core/routes/app_route.dart';
 import 'package:mass_management/utils/app_color.dart' show AppColor;
 
 class OperationsSection extends StatelessWidget {
@@ -36,29 +38,38 @@ class OperationsSection extends StatelessWidget {
             ),
             itemBuilder: (context, index) {
               final op = operations[index];
-              return Card(
-                color: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.grey.shade300, width: 1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: AppColor.primaryColor,
-                      child: Icon(op['icon'], color: Colors.white),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      op['label'],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
+              return InkWell(
+                onTap: (){
+                  if(index==0){
+                    context.push(AppRoute.addMeal);
+
+                  }
+
+                },
+                child: Card(
+                  color: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Colors.grey.shade300, width: 1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: AppColor.primaryColor,
+                        child: Icon(op['icon'], color: Colors.white),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        op['label'],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

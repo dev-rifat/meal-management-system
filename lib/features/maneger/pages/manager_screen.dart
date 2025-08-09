@@ -48,6 +48,7 @@ class MessManagerPage extends StatelessWidget {
 
 
 _summaryChart() => SummaryChart(
+  onClick: (){},
   data: [
     ChartData(label: 'Remaining', percentage: 16, color: Colors.green),
     ChartData(label: 'Shared Expense', percentage: 25, color: Colors.orange),

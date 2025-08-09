@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 
+
 class CustomInputField extends StatefulWidget {
   final TextEditingController controller;
   final String? hitText;
@@ -8,31 +9,31 @@ class CustomInputField extends StatefulWidget {
   final double? corneRadius;
   final bool isHideLabelText;
   final Widget? prefixIcon;
-  final Color ?cursorColor;
-  final TextInputType ?textInputType;
-  final Color ?borderColor;
-  final Color ?errorBorderColor;
+  final Color? cursorColor;
+  final TextInputType? textInputType;
+  final Color? borderColor;
+  final Color? errorBorderColor;
   final TextStyle? hintStyle;
   final InputDecoration? inputDecoration;
   final String? Function(String?)? validator;
-  final void Function(String)? onChanged; // Added onChange callback
+  final void Function(String)? onChanged;
 
   const CustomInputField({
     super.key,
     required this.controller,
-    this.corneRadius=6,
+    this.corneRadius = 6,
     this.hintStyle,
     this.errorBorderColor,
     this.borderColor,
-    this.isHideLabelText=false,
+    this.isHideLabelText = false,
     this.cursorColor,
-    this.textInputType=TextInputType.text,
+    this.textInputType = TextInputType.text,
     this.prefixIcon,
     this.suffixIcon,
     this.inputDecoration,
     this.hitText,
     this.validator,
-    this.onChanged, // Added onChange callback
+    this.onChanged,
   });
 
   @override
@@ -42,90 +43,85 @@ class CustomInputField extends StatefulWidget {
 class _CustomInputFieldState extends State<CustomInputField> {
   @override
   Widget build(BuildContext context) {
-
-    return widget.prefixIcon != null && widget.suffixIcon != null
-        ? _buildTextFormField(_inputStyleForPrefixAndPrefix())
-        : widget.prefixIcon != null
-        ? _buildTextFormField(_inputStyleForPrefix())
-        : widget.suffixIcon != null
-        ? _buildTextFormField(_inputStyleForSuffix())
-        : _buildTextFormField(_inputStyle());
+    if (widget.prefixIcon != null && widget.suffixIcon != null) {
+      return _buildTextFormField(_inputStyleForPrefixAndSuffix());
+    } else if (widget.prefixIcon != null) {
+      return _buildTextFormField(_inputStyleForPrefix());
+    } else if (widget.suffixIcon != null) {
+      return _buildTextFormField(_inputStyleForSuffix());
+    } else {
+      return _buildTextFormField(_inputStyle());
+    }
   }
 
   TextFormField _buildTextFormField(InputDecoration decoration) {
     return TextFormField(
       controller: widget.controller,
-      cursorColor:widget. cursorColor ?? const Color(0xFF3B3B3B),
+      cursorColor: widget.cursorColor ?? const Color(0xFF3B3B3B),
       validator: widget.validator,
-      keyboardType:  widget.textInputType,
-      onChanged: widget.onChanged, // Call onChange callback
+      keyboardType: widget.textInputType,
+      onChanged: widget.onChanged,
       decoration: widget.inputDecoration ?? decoration,
     );
   }
 
   InputDecoration _inputStyle() {
-
-    if(widget.isHideLabelText==true){
+    if (widget.isHideLabelText == true) {
       return InputDecoration(
         labelStyle: widget.hintStyle ?? const TextStyle(),
         hintText: widget.hitText,
-
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(widget.corneRadius ?? 12),
-            borderSide:  BorderSide(width: 1, color:widget.borderColor?? Colors.transparent )),
+          borderRadius: BorderRadius.circular(widget.corneRadius ?? 12),
+          borderSide: BorderSide(
+              width: 1, color: widget.borderColor ?? Colors.transparent),
+        ),
         focusedBorder: OutlineInputBorder(
-          borderSide:  BorderSide(color:widget.borderColor?? Colors.grey),
+          borderSide: BorderSide(color: widget.borderColor ?? Colors.grey),
           borderRadius: BorderRadius.circular(widget.corneRadius ?? 12),
         ),
         enabledBorder: OutlineInputBorder(
-            borderSide:  BorderSide(color: widget.borderColor?? Colors.grey),
-            borderRadius: BorderRadius.circular(widget.corneRadius ?? 12)),
-
+          borderSide: BorderSide(color: widget.borderColor ?? Colors.grey),
+          borderRadius: BorderRadius.circular(widget.corneRadius ?? 12),
+        ),
         hintStyle: widget.hintStyle ?? const TextStyle(color: Colors.grey),
         errorStyle: const TextStyle(
-          color: Colors.red, // Set the color of the error text
-          fontStyle: FontStyle.italic, // Set the style of the error text
+          color: Colors.red,
+          fontStyle: FontStyle.italic,
         ),
-        errorBorder:  OutlineInputBorder(
-          borderSide: BorderSide(
-              color:widget.errorBorderColor?? Colors.transparent),),
-
-
-
+        errorBorder: OutlineInputBorder(
+          borderSide:
+          BorderSide(color: widget.errorBorderColor ?? Colors.transparent),
+        ),
       );
-
     }
+
     return InputDecoration(
       labelText: widget.hitText ?? "Enter input here",
       labelStyle: widget.hintStyle ?? const TextStyle(),
-
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(widget.corneRadius ?? 12),
-          borderSide:  BorderSide(width: 1, color:widget.borderColor?? Colors.transparent )),
+        borderRadius: BorderRadius.circular(widget.corneRadius ?? 12),
+        borderSide: BorderSide(
+            width: 1, color: widget.borderColor ?? Colors.transparent),
+      ),
       focusedBorder: OutlineInputBorder(
-        borderSide:  BorderSide(color:widget.borderColor?? Colors.grey),
+        borderSide: BorderSide(color: widget.borderColor ?? Colors.grey),
         borderRadius: BorderRadius.circular(widget.corneRadius ?? 12),
       ),
       enabledBorder: OutlineInputBorder(
-          borderSide:  BorderSide(color: widget.borderColor?? Colors.grey),
-          borderRadius: BorderRadius.circular(widget.corneRadius ?? 12)),
-
+        borderSide: BorderSide(color: widget.borderColor ?? Colors.grey),
+        borderRadius: BorderRadius.circular(widget.corneRadius ?? 12),
+      ),
       hintStyle: widget.hintStyle ?? const TextStyle(color: Colors.grey),
       errorStyle: const TextStyle(
-        color: Colors.red, // Set the color of the error text
-        fontStyle: FontStyle.italic, // Set the style of the error text
+        color: Colors.red,
+        fontStyle: FontStyle.italic,
       ),
-      errorBorder:  OutlineInputBorder(
-        borderSide: BorderSide(
-            color:widget.errorBorderColor?? Colors.transparent),),
-
-
-
+      errorBorder: OutlineInputBorder(
+        borderSide:
+        BorderSide(color: widget.errorBorderColor ?? Colors.transparent),
+      ),
     );
-
   }
-
-
 
   InputDecoration _inputStyleForPrefix() {
     return _inputStyle().copyWith(
@@ -139,18 +135,13 @@ class _CustomInputFieldState extends State<CustomInputField> {
     );
   }
 
-  InputDecoration _inputStyleForPrefixAndPrefix() {
+  InputDecoration _inputStyleForPrefixAndSuffix() {
     return _inputStyle().copyWith(
       prefixIcon: widget.prefixIcon,
       suffixIcon: widget.suffixIcon,
     );
   }
 }
-
-
-
-
-
 
 
 class PasswordInputField extends StatefulWidget {

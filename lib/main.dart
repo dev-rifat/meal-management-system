@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mass_management/core/routes/app_page.dart' show AppPage;
+import 'package:mass_management/core/routes/app_page.dart' show AppPage, appRouter;
 import 'package:mass_management/features/auth/presentation/blog/blog_state.dart' show LoginBloc;
 import 'package:mass_management/utils/app_layout.dart' show ResponsiveLayout;
 
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
                   return MaterialApp.router(
                     debugShowCheckedModeBanner: false,
                     title: 'BLoC Auth Example',
-                    routerConfig: AppPage.config(),
+                    routerConfig: appRouter,
                     theme: ThemeData(
                       fontFamily: "Montserrat",
                       useMaterial3: true,
