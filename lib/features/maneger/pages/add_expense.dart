@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mass_management/core/widgets/app_input_field.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/core/widgets/custom_app_button.dart';
+import 'package:mass_management/utils/app_color.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
@@ -80,9 +81,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               maxLines: 3,
               decoration: _inputDecoration("Write details..."),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 50),
             CustomAppButton(
               onPressed: _submitExpense,
+
+              buttonColor: AppColor.primaryColor,
               text: "Submit Expense",
             ),
           ],

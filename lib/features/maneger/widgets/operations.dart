@@ -11,9 +11,8 @@ class OperationsSection extends StatelessWidget {
     final List<Map<String, dynamic>> operations = [
       {'label': 'Add Market Expense', 'icon': Icons.playlist_add},
       {'label': 'Add Member Meal', 'icon': Icons.checklist},
-      {'label': 'Deposit Money', 'icon': Icons.attach_money},
       {'label': 'Add Shared Expense', 'icon': Icons.groups},
-      {'label': 'Add Market List', 'icon': Icons.calendar_today},
+      {'label': 'Expense Lists', 'icon': Icons.format_list_bulleted_rounded},
     ];
 
     return Padding(
@@ -39,12 +38,16 @@ class OperationsSection extends StatelessWidget {
             itemBuilder: (context, index) {
               final op = operations[index];
               return InkWell(
-                onTap: (){
-                  if(index==0){
+                onTap: () {
+                  if (index == 0) {
+                    context.push(AppRoute.addExpense);
+                  } else if (index == 1) {
                     context.push(AppRoute.addMeal);
-
+                  } else if (index == 2) {
+                    context.push(AppRoute.addShareExpense);
+                  } else {
+                    context.push(AppRoute.expenseList);
                   }
-
                 },
                 child: Card(
                   color: Colors.white,

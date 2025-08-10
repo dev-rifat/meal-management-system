@@ -5,7 +5,11 @@ import 'package:mass_management/features/auth/presentation/pages/sign_in.dart';
 import 'package:mass_management/features/deashboard/pages/dashboard_screen.dart';
 import 'package:mass_management/features/main/main.dart';
 import 'package:mass_management/features/maneger/pages/add_expense.dart';
+import 'package:mass_management/features/maneger/pages/add_meal.dart' show AddMeal;
+import 'package:mass_management/features/maneger/pages/add_share_expense.dart';
 import 'package:mass_management/features/starting/view/splash_screen.dart';
+
+import '../../features/maneger/pages/epense_list.dart' show ExpenseListScreen;
 
 // Global router instance (kept alive for hot reload)
 final GoRouter appRouter = GoRouter(
@@ -25,10 +29,24 @@ final GoRouter appRouter = GoRouter(
       path: '/deashboard_screen',
       name: AppRoute.deashboard,
       builder: (_, __) => const MainNavScreen(),
-    ),GoRoute(
+    ),
+    GoRoute(
       path: '/add_meal_screen',
-      name: AppRoute.addMeal,
+      name: AppRoute.addExpense,
       builder: (_, __) =>  AddExpenseScreen(),
+    ),
+    GoRoute(
+      path: '/entry_meal_screen',
+      name: AppRoute.addMeal,
+      builder: (_, __) =>  AddMeal(),
+    ), GoRoute(
+      path: '/add_share_expense_screen',
+      name: AppRoute.addShareExpense,
+      builder: (_, __) =>  AddShareExpenseScreen(),
+    ),GoRoute(
+      path: '/expense_screen_list',
+      name: AppRoute.expenseList,
+      builder: (_, __) =>  ExpenseListScreen(),
     ),
   ],
 );
