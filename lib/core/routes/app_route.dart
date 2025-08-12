@@ -8,6 +8,7 @@ class AppRoute {
   static String addMeal = "/entry_meal_screen";
   static String addShareExpense = "/add_share_expense_screen";
   static String expenseList = "/expense_screen_list";
+  static String signUp = "/signup_screen";
 
 }
 

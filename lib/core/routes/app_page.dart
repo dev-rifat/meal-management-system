@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:mass_management/core/routes/app_route.dart';
 import 'package:mass_management/features/auth/presentation/pages/sign_in.dart';
+import 'package:mass_management/features/auth/presentation/pages/sign_up.dart' show SignUpScreen, SignupPage;
 import 'package:mass_management/features/deashboard/pages/dashboard_screen.dart';
 import 'package:mass_management/features/main/main.dart';
 import 'package:mass_management/features/maneger/pages/add_expense.dart';
@@ -43,10 +44,18 @@ final GoRouter appRouter = GoRouter(
       path: '/add_share_expense_screen',
       name: AppRoute.addShareExpense,
       builder: (_, __) =>  AddShareExpenseScreen(),
-    ),GoRoute(
+    ),
+    
+    GoRoute(
       path: '/expense_screen_list',
       name: AppRoute.expenseList,
       builder: (_, __) =>  ExpenseListScreen(),
+    ),
+     
+    GoRoute(
+      path: '/signup_screen',
+      name: AppRoute.signUp,
+      builder: (_, __) =>  SignupPage(),
     ),
   ],
 );

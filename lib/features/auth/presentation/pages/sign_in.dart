@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mass_management/core/routes/app_route.dart';
 import 'package:mass_management/core/utils/app_layout_helper.dart'
     show AppLayoutHelper;
 import 'package:mass_management/core/widgets/custom_app_button.dart';
@@ -137,7 +139,7 @@ class SignInScreen extends StatelessWidget {
       context: context,
       firstText: "New user? ",
       endText: AppString.text_sign_up,
-      onAction: () {},
+      onAction: ()=>context.push(AppRoute.signUp),
     );
   }
 }
