@@ -4,6 +4,8 @@ import 'package:mass_management/core/routes/app_route.dart';
 import 'package:mass_management/features/auth/presentation/pages/sign_in.dart';
 import 'package:mass_management/features/auth/presentation/pages/sign_up.dart' show SignUpScreen, SignupPage;
 import 'package:mass_management/features/deashboard/pages/dashboard_screen.dart';
+import 'package:mass_management/features/deashboard/pages/my_wallet.dart';
+import 'package:mass_management/features/main/home.dart' show ZoomDrawerExample;
 import 'package:mass_management/features/main/main.dart';
 import 'package:mass_management/features/maneger/pages/add_expense.dart';
 import 'package:mass_management/features/maneger/pages/add_meal.dart' show AddMeal;
@@ -56,6 +58,19 @@ final GoRouter appRouter = GoRouter(
       path: '/signup_screen',
       name: AppRoute.signUp,
       builder: (_, __) =>  SignupPage(),
+    ),  GoRoute(
+      path: '/my_wallet',
+      name: AppRoute.myWallet,
+      builder: (_, __) =>  WalletScreen(),
     ),
+
+
+    GoRoute(
+      
+      path: '/menu_screen',
+      name: AppRoute.menuScreen,
+    
+    
+    builder: (_, __) => const ZoomDrawerExample()),
   ],
 );

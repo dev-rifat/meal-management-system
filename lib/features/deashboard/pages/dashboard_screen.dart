@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/features/deashboard/widgets/balance_swap_card.dart';
+import 'package:mass_management/features/deashboard/widgets/operation_grid.dart';
 import 'package:mass_management/utils/app_color.dart';
+import 'package:mass_management/utils/app_style.dart';
+import 'package:mass_management/utils/dimensions.dart';
+
+import 'transaction_history.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -9,8 +14,17 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.backgroundColor,
       appBar: CustomAppBar(
-        title: "Welcome",
+        backgroundColor: AppColor.backgroundColor,
+
+        title: "",
+        titleWidget: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Good Evening",style: AppStyle.titleText.copyWith(fontSize: Dimensions.fontSizeMid),)
+          ],
+        ),
         centerTitle: false,
         leading:  Padding(
           padding: const EdgeInsets.all(8.0),
@@ -47,7 +61,9 @@ class DashboardScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            const Text("No transactions yet."),
+
+            TransactionScreen(),
+          //  const Text("No transactions yet."),
           ],
         ),
       ),
@@ -64,45 +80,5 @@ class DashboardScreen extends StatelessWidget {
 
  
   /// Operations grid
-  Widget _operationGrid() {
-    final List<Map<String, dynamic>> operations = [
-      {"icon": Icons.wallet, "label": "My Wallet"},
-      {"icon": Icons.list, "label": "Meal List"},
-      {"icon": Icons.event, "label": "Market Date"},
-      {"icon": Icons.money, "label": "Summary"},
-      {"icon": Icons.account_balance_wallet, "label": "Mess Wallet"},
-      {"icon": Icons.picture_as_pdf, "label": "Documents"},
-    ];
-
-    return GridView.builder(
-      itemCount: operations.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1,
-      ),
-      itemBuilder: (context, index) {
-        final item = operations[index];
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColor.primaryColor.withOpacity(0.2),
-              child: Icon(item['icon'], color: Colors.blue.shade800),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              item['label'],
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  Widget _operationGrid()=>OperationGrid();
 }

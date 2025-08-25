@@ -9,6 +9,9 @@ class AppRoute {
   static String addShareExpense = "/add_share_expense_screen";
   static String expenseList = "/expense_screen_list";
   static String signUp = "/signup_screen";
+    static String menuScreen = "/menu_screen";
+    static String myWallet = "/my_wallet";
+
 
 }
 

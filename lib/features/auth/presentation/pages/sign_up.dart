@@ -263,6 +263,7 @@ class _SignupPageState extends State<SignupPage> {
           validator: (value) => _validateInput(value, "Mess address"),
         ),
         _rawTitleText("Emergency Number", isRequired: false),
+        _alertText("Add the house owner's contact number for quick help in emergencies."),
 
         _inputField(
           "Emergency Number (optional)",
