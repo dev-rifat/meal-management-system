@@ -53,7 +53,7 @@ class OperationGrid extends StatelessWidget {
   void _onClick(int index, BuildContext context) {
     switch (index) {
       case 0:
-        context.push(AppRoute.myWallet);
+        context.push(AppRoute.mealList);
         break;
 
       case 1:

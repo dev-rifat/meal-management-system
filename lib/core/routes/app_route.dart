@@ -11,6 +11,7 @@ class AppRoute {
   static String signUp = "/signup_screen";
     static String menuScreen = "/menu_screen";
     static String myWallet = "/my_wallet";
+    static String mealList = "/meal_list";
 
 
 }

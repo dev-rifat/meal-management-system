@@ -12,6 +12,7 @@ import 'package:mass_management/features/maneger/pages/add_meal.dart' show AddMe
 import 'package:mass_management/features/maneger/pages/add_share_expense.dart';
 import 'package:mass_management/features/starting/view/splash_screen.dart';
 
+import '../../features/deashboard/pages/meal_list.dart' show MealDetailsPage;
 import '../../features/maneger/pages/epense_list.dart' show ExpenseListScreen;
 
 // Global router instance (kept alive for hot reload)
@@ -66,11 +67,17 @@ final GoRouter appRouter = GoRouter(
 
 
     GoRoute(
-      
       path: '/menu_screen',
       name: AppRoute.menuScreen,
-    
-    
     builder: (_, __) => const ZoomDrawerExample()),
+
+
+    GoRoute(
+      path: '/meal_list',
+      name: AppRoute.mealList,
+    builder: (_, __) =>  MealDetailsPage()),
+
+
+
   ],
 );
