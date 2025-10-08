@@ -1,16 +1,15 @@
-import 'package:e_com_cub/app/moduls/auth/view/widget/sign_up_text_field_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:mass_management/features/auth/presentation/widgets/sign_up_text_field_widget.dart';
+import '../../../../core/utils/app_layout_helper.dart';
 import '../../../../utils/app_color.dart';
 import '../../../../utils/dimensions.dart';
-import '../../../global/utils/app_layout_helper.dart';
-import '../controllers/auth_controller.dart';
 
 
 
 class TextFieldLayout extends GetView<AuthController> {
   const TextFieldLayout({super.key});
 
+  
   @override
   Widget build(BuildContext context) {
     return Card(

@@ -12,6 +12,7 @@ class AppRoute {
     static String menuScreen = "/menu_screen";
     static String myWallet = "/my_wallet";
     static String mealList = "/meal_list";
+    static String monthlySummary = "/monthly_summary";
 
 
 }

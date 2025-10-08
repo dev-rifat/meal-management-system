@@ -13,6 +13,7 @@ import 'package:mass_management/features/maneger/pages/add_share_expense.dart';
 import 'package:mass_management/features/starting/view/splash_screen.dart';
 
 import '../../features/deashboard/pages/meal_list.dart' show MealDetailsPage;
+import '../../features/deashboard/pages/montly_summary.dart';
 import '../../features/maneger/pages/epense_list.dart' show ExpenseListScreen;
 
 // Global router instance (kept alive for hot reload)
@@ -59,10 +60,17 @@ final GoRouter appRouter = GoRouter(
       path: '/signup_screen',
       name: AppRoute.signUp,
       builder: (_, __) =>  SignupPage(),
-    ),  GoRoute(
+    ),
+
+    GoRoute(
       path: '/my_wallet',
       name: AppRoute.myWallet,
       builder: (_, __) =>  WalletScreen(),
+    ),
+    GoRoute(
+      path: '/monthly_summary',
+      name: AppRoute.monthlySummary,
+      builder: (_, __) =>  MonthlySummary(),
     ),
 
 

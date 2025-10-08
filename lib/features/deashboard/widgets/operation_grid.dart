@@ -11,8 +11,8 @@ class OperationGrid extends StatelessWidget {
       {"icon": Icons.list, "label": "Meal List"},
       {"icon": Icons.wallet, "label": "Wallet"},
       {"icon": Icons.event, "label": "Month Summary"},
-      {"icon": Icons.money, "label": "Meal Summary"},
-      {"icon": Icons.picture_as_pdf, "label": "Documents"},
+      // {"icon": Icons.money, "label": "Meal Summary"},
+      // {"icon": Icons.picture_as_pdf, "label": "Documents"},
     ];
 
     return GridView.builder(
@@ -62,7 +62,7 @@ class OperationGrid extends StatelessWidget {
         break;
 
       case 2:
-      //  context.push(AppRoute.settings);
+       context.push(AppRoute.monthlySummary);
         break;
 
       case 3:

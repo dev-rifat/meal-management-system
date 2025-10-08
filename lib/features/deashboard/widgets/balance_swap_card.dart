@@ -37,10 +37,10 @@ class _BalanceCardSwitcherState extends State<BalanceCardSwitcher> {
           child: _showPrimary
               ? _balanceCard(
                   key: const ValueKey('primary'),
-                  title: "Mess Balance",
-                  balance: "৳ -1300.00",
-                  deposit: "৳ 0.00",
-                  expense: "৳ 1300.00",
+                  title: "20 Aug - 20 Sep \n2025",
+                  balance: "Per meal - 46.7",
+                  deposit: "৳ 12600",
+                  expense: "৳ 2000",
                   gradient: const LinearGradient(
                     colors: [
                       AppColor.primaryColor,
