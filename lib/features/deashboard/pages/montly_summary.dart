@@ -261,6 +261,8 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             Text("Total Meal: ${member["totalMeal"]}"),
             Text("Total Cost: ৳${member["totalCost"]}"),
             Text("Meal Cost: ৳${mealCost.toStringAsFixed(0)}"),
+
+
             Text(
               due >= 0
                   ? "Status: ✅ Paid (৳${due.toStringAsFixed(0)} extra)"

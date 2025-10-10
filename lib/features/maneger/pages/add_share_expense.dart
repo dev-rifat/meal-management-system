@@ -1,26 +1,34 @@
-import 'package:dropdown_button2/dropdown_button2.dart' show DropdownButtonFormField2, ButtonStyleData;
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:mass_management/core/widgets/app_input_field.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/utils/app_color.dart';
+import 'package:mass_management/utils/app_style.dart';
 
 class AddShareExpenseScreen extends StatefulWidget {
   const AddShareExpenseScreen({super.key});
 
   @override
-  State<AddShareExpenseScreen> createState() => _AddExpenseScreenState();
+  State<AddShareExpenseScreen> createState() => _AddShareExpenseScreenState();
 }
 
-class _AddExpenseScreenState extends State<AddShareExpenseScreen> {
+class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
   final _priceController = TextEditingController();
   final _detailsController = TextEditingController();
   final _dateController = TextEditingController();
-  String? _selectedMember;
-  String? _selectedBillType; // <-- for radio-like single selection
 
-  // Dynamic bill list
-  final List<String> billTypes = ["WiFi", "Gas","Electricity","Khala","Water","Others"];
+  String? _selectedMember;
+  String? _selectedBillType;
+
+  final List<String> billTypes = [
+    "WiFi",
+    "Gas",
+    "Electricity",
+    "Khala",
+    "Water",
+    "Others"
+  ];
 
   @override
   void initState() {
@@ -43,18 +51,70 @@ class _AddExpenseScreenState extends State<AddShareExpenseScreen> {
     }
   }
 
+  void _addCustomBillType() {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          "Add Custom Bill Type",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: "Enter bill name (e.g. Internet)",
+            border: OutlineInputBorder(),
+
+
+          ),
+        ),
+
+
+
+
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.primaryColor,
+            ),
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isNotEmpty && !billTypes.contains(text)) {
+                setState(() {
+                  billTypes.add(text);
+                  _selectedBillType = text;
+                });
+              }
+              Navigator.pop(context);
+            },
+            child:  Text("Add",style: AppStyle.normalText.copyWith(color: AppColor.cardColor),),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _appBar(),
+      appBar: CustomAppBar(
+        title: "Add Share Expense",
+        backgroundColor: Colors.white,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _title("Date"),
-            const SizedBox(height: 12),
+            _sectionTitle("Date"),
+            const SizedBox(height: 10),
             GestureDetector(
               onTap: _pickDate,
               child: AbsorbPointer(
@@ -65,54 +125,67 @@ class _AddExpenseScreenState extends State<AddShareExpenseScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
 
-            _title("Spent By"),
-            const SizedBox(height: 12),
-            _spentDropDown(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
+            _sectionTitle("Spent By"),
+            const SizedBox(height: 10),
+            _buildDropdown<String>(
+              value: _selectedMember,
+              hint: "Select Member",
+              items: const [
+                DropdownMenuItem(value: "1", child: Text("Member 1")),
+                DropdownMenuItem(value: "2", child: Text("Member 2")),
+              ],
+              onChanged: (val) => setState(() => _selectedMember = val),
+            ),
 
-            _title("Price"),
-            const SizedBox(height: 12),
+            const SizedBox(height: 18),
+            _sectionTitle("Price"),
+            const SizedBox(height: 10),
             CustomInputField(
               controller: _priceController,
-              hitText: "Enter price",
+              hitText: "Enter amount",
               textInputType: TextInputType.number,
-
-            ),
-            const SizedBox(height: 16),
-
-            _title("Bill Type"),
-            const SizedBox(height: 12),
-            Column(
-              children: billTypes.map((bill) {
-                return CheckboxListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 0), // left/right padding
-                  controlAffinity: ListTileControlAffinity.leading, // checkbox before text
-                  title: Text(bill),
-                  selectedTileColor: AppColor.primaryColor,
-                  activeColor: AppColor.primaryColor, // checkbox border & tick color
-
-                  value: _selectedBillType == bill,
-                  onChanged: (bool? selected) {
-                    setState(() {
-                      _selectedBillType = selected! ? bill : null;
-                    });
-                  },
-                );
-              }).toList(),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
+            _sectionTitle("Bill Type"),
+            const SizedBox(height: 10),
+            _buildDropdown<String>(
+              value: _selectedBillType,
+              hint: "Select Bill Type",
+              items: billTypes
+                  .map((bill) => DropdownMenuItem(
+                value: bill,
+                child: Text(bill),
+              ))
+                  .toList(),
+              onChanged: (val) => setState(() => _selectedBillType = val),
+            ),
 
-            _title("Details"),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: _addCustomBillType,
+                icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
+                label: const Text(
+                  "Add Custom Bill Type",
+                  style: TextStyle(color: Colors.blue),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 18),
+            _sectionTitle("Details"),
+            const SizedBox(height: 10),
             TextFormField(
               controller: _detailsController,
               maxLines: 3,
-              decoration: _inputDecoration("Write details..."),
+              decoration: _inputDecoration("Write details...",15),
             ),
-            const SizedBox(height: 50),
+
+            const SizedBox(height: 40),
             CustomAppButton(
               onPressed: _submitExpense,
               buttonColor: AppColor.primaryColor,
@@ -124,64 +197,58 @@ class _AddExpenseScreenState extends State<AddShareExpenseScreen> {
     );
   }
 
-  _appBar() => CustomAppBar(
-    title: "Add Share Expense",
-    backgroundColor: Colors.white,
-  );
-
-  Widget _title(String text) => Text(
+  Widget _sectionTitle(String text) => Text(
     text,
-    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-  );
-
-  InputDecoration _inputDecoration(String hint) => InputDecoration(
-    hintText: hint,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-    enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
-        borderSide: const BorderSide(color: Colors.black)),
-    focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
-        borderSide: const BorderSide(color: Colors.black)),
-    contentPadding:
-    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-  );
-
-  Widget _spentDropDown() => DropdownButtonFormField2(
-    value: _selectedMember,
-    decoration: InputDecoration(
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-      enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: Colors.black)),
-      focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: Colors.black)),
+    style: const TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
     ),
-    hint: const Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        "Select Member",
-        style: TextStyle(color: Colors.black54),
+  );
+
+  Widget _buildDropdown<T>({
+    required T? value,
+    required String hint,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return DropdownButtonFormField2<T>(
+      value: value,
+      isExpanded: true,
+      decoration: _inputDecoration(hint),
+      hint: Text(
+        hint,
+        style: const TextStyle(color: Colors.black54, fontSize: 15),
       ),
+      items: items,
+      onChanged: onChanged,
+      buttonStyleData: const ButtonStyleData(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        height: 32,
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint,[double ?horizontal=0]) => InputDecoration(
+    hintText: hint,
+    contentPadding:
+     EdgeInsets.symmetric(horizontal: horizontal??0, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
     ),
-    alignment: Alignment.center,
-    isExpanded: true,
-    items: const [
-      DropdownMenuItem(value: "1", child: Text("Member 1")),
-      DropdownMenuItem(value: "2", child: Text("Member 2")),
-    ],
-    onChanged: (val) {
-      setState(() {
-        _selectedMember = val;
-      });
-    },
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
+      borderSide: const BorderSide(color: Colors.black54),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
+      borderSide: BorderSide(color: AppColor.primaryColor, width: 1.5),
+    ),
   );
 
   void _submitExpense() {
-    debugPrint("Price: ${_priceController.text}");
-    debugPrint("Member: $_selectedMember");
     debugPrint("Date: ${_dateController.text}");
+    debugPrint("Member: $_selectedMember");
+    debugPrint("Price: ${_priceController.text}");
     debugPrint("Bill Type: $_selectedBillType");
     debugPrint("Details: ${_detailsController.text}");
   }

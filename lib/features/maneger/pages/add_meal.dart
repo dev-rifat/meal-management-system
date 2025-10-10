@@ -1,33 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:mass_management/core/widgets/custom_app_bar.dart' show CustomAppBar;
-import 'package:mass_management/core/widgets/custom_app_button.dart' show CustomAppButton;
+import 'package:mass_management/core/widgets/custom_app_bar.dart';
+import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/utils/app_color.dart';
+import 'package:mass_management/utils/app_style.dart';
 
 class AddMeal extends StatefulWidget {
-  const AddMeal({super.key});
+  final String role; // "manager" or "member"
+  final String currentUserName; // logged-in user's name
+
+  const AddMeal({
+    super.key,
+    this.role = "manager",
+    this.currentUserName = "Rifat",
+  });
 
   @override
-  State<AddMeal> createState() => _DailyMealEntryScreenState();
+  State<AddMeal> createState() => _AddMealState();
 }
 
-class _DailyMealEntryScreenState extends State<AddMeal> {
-  double breakfast = 0.5;
-  double lunch = 1;
-  double dinner = 1;
+class _AddMealState extends State<AddMeal> {
   DateTime selectedDate = DateTime.now();
 
+  // Dummy user list (replace with API data or GetX controller)
+  final List<String> _users = [
+    "Select Member",
+    "Rifat Hasan",
+    "Abdullah Al Mamun",
+    "Sabbir Ahmed",
+  ];
+
+  late String selectedUser;
+
+  // Meals (default)
+  final Map<String, double> _meals = {
+    "Breakfast": 0.5,
+    "Lunch": 1,
+    "Dinner": 1,
+  };
+
+  final TextEditingController _mealNameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Default selected user
+    selectedUser = widget.role == "manager"
+        ? "Select Member"
+        : widget.currentUserName;
+  }
+
+  /// Change meal count
   void _changeMealCount(String meal, double change) {
     setState(() {
-      if (meal == "breakfast") {
-        breakfast = (breakfast + change).clamp(0, 99);
-      } else if (meal == "lunch") {
-        lunch = (lunch + change).clamp(0, 99);
-      } else if (meal == "dinner") {
-        dinner = (dinner + change).clamp(0, 99);
-      }
+      double newValue = (_meals[meal]! + change).clamp(0, 99);
+      _meals[meal] = newValue;
     });
   }
 
+  /// Pick date & time
   Future<void> _pickDateTime() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -56,23 +86,87 @@ class _DailyMealEntryScreenState extends State<AddMeal> {
     }
   }
 
+  /// Add custom meal type
+  void _addCustomMeal() {
+    String mealName = _mealNameController.text.trim();
+    if (mealName.isNotEmpty && !_meals.containsKey(mealName)) {
+      setState(() {
+        _meals[mealName] = 0.5;
+        _mealNameController.clear();
+        Navigator.pop(context);
+      });
+    }
+  }
+
+  /// Dialog to add new meal
+  void _showAddMealDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Add Custom Meal"),
+        content: TextField(
+          controller: _mealNameController,
+          decoration: const InputDecoration(
+            hintText: "Enter meal name (e.g. Snacks)",
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: _addCustomMeal,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.primaryColor,
+            ),
+            child:  Text("Add",style: AppStyle.normalText.copyWith(color: Colors.white),),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Submit meals
+  void _submitMeal() {
+    if (widget.role == "manager" && selectedUser == "Select Member") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a member first.")),
+      );
+      return;
+    }
+
+    debugPrint("Role: ${widget.role}");
+    debugPrint("User: $selectedUser");
+    debugPrint("Date: $selectedDate");
+    debugPrint("Meals: $_meals");
+
+    // TODO: Save meal data logic here
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isManager = widget.role == "manager";
+
     return Scaffold(
-      appBar: _appBar(),
+      appBar: CustomAppBar(
+        title: isManager ? "Add Meal (Manager)" : "Add My Meal",
+        backgroundColor: Colors.white,
+      ),
+      backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Date Selector
+            /// Date Picker
             GestureDetector(
               onTap: _pickDateTime,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(6),
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.grey.shade400),
                 ),
                 child: Row(
@@ -81,98 +175,137 @@ class _DailyMealEntryScreenState extends State<AddMeal> {
                     Text(
                       "${selectedDate.day.toString().padLeft(2, '0')}-"
                           "${selectedDate.month.toString().padLeft(2, '0')}-"
-                          "${selectedDate.year} "
+                          "${selectedDate.year}  "
                           "${selectedDate.hour.toString().padLeft(2, '0')}:"
                           "${selectedDate.minute.toString().padLeft(2, '0')} ${selectedDate.hour >= 12 ? 'PM' : 'AM'}",
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
+                      style: const TextStyle(fontSize: 16, color: Colors.black87),
                     ),
-                    Icon(Icons.calendar_today, color: AppColor.primaryColor),
+                    const Icon(Icons.calendar_today, color: AppColor.primaryColor),
                   ],
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
 
-            // User Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
+            /// Manager Only: User Selector
+            if (isManager)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedUser,
+                    isExpanded: true,
+                    items: _users.map((user) {
+                      return DropdownMenuItem<String>(
+                        value: user,
+                        child: Text(
+                          user,
+                          style: TextStyle(
+                            color: user == "Select Member"
+                                ? Colors.grey.shade600
+                                : Colors.black,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedUser = value!;
+                      });
+                    },
+                  ),
+                ),
               ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        radius: 24,
-                        backgroundColor: AppColor.primaryColor,
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        "User Name",
-                        style: TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      mealCounter("Breakfast", breakfast, () => _changeMealCount("breakfast", 0.5), () => _changeMealCount("breakfast", -0.5)),
-                      mealCounter("Lunch", lunch, () => _changeMealCount("lunch", 0.5), () => _changeMealCount("lunch", -0.5)),
-                      mealCounter("Dinner", dinner, () => _changeMealCount("dinner", 0.5), () => _changeMealCount("dinner", -0.5)),
-                    ],
-                  ),
-                ],
+
+
+            const SizedBox(height: 20),
+
+            /// Header Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Meals",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                IconButton(
+                  onPressed: _showAddMealDialog,
+                  icon: const Icon(Icons.add_circle, color: AppColor.primaryColor, size: 30),
+                  tooltip: "Add custom meal",
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            /// Meal List
+            Expanded(
+              child: ListView.separated(
+                itemCount: _meals.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  String meal = _meals.keys.elementAt(index);
+                  double value = _meals[meal]!;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey.shade300),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            meal,
+                            style: const TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => _changeMealCount(meal, -0.5),
+                          icon: const Icon(Icons.remove_circle, color: Colors.red, size: 28),
+                        ),
+                        Text(
+                          value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                        ),
+                        IconButton(
+                          onPressed: () => _changeMealCount(meal, 0.5),
+                          icon: const Icon(Icons.add_circle, color: Colors.green, size: 28),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
-            const Spacer(),
 
-            // Update Button
+            const SizedBox(height: 16),
+
+            /// Submit Button
             CustomAppButton(
-              onPressed: _submitExpense,
+              onPressed: _submitMeal,
+              text: "Add Meal",
               buttonColor: AppColor.primaryColor,
-
-              text: "Update Meal",
             ),
             const SizedBox(height: 20),
           ],
         ),
       ),
-      backgroundColor: Colors.white,
     );
-  }
-
-  _appBar() => CustomAppBar(
-    title: "Add Daily Meal",
-    backgroundColor: Colors.white,
-  );
-
-  Widget mealCounter(String label, double value, VoidCallback onIncrement, VoidCallback onDecrement) {
-    return Column(
-      children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Colors.black)),
-        const SizedBox(height: 4),
-        IconButton(
-          icon: const Icon(Icons.add_circle, color: Colors.blue,size: 30),
-          onPressed: onIncrement,
-        ),
-        Text(
-          value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1),
-          style: const TextStyle(fontSize: 18, color: Colors.black),
-        ),
-        IconButton(
-          icon: const Icon(Icons.remove_circle, color: Colors.red,size: 30),
-          onPressed: onDecrement,
-        ),
-      ],
-    );
-  }
-
-  _submitExpense() {
-    // Handle save/update logic here
   }
 }
