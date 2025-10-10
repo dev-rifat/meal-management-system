@@ -42,7 +42,7 @@ class ProfilePage extends StatelessWidget {
               _infoRow(Icons.cake, "Birthday", DateFormat('dd MMM, yyyy').format(user.birthday)),
             ]),
             const SizedBox(height: 24),
-            _logoutButton(),
+            _logoutButton(context),
           ],
         ),
       ),
@@ -141,11 +141,9 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Logout Button
-  Widget _logoutButton() {
+  Widget _logoutButton(BuildContext context) {
     return InkWell(
-      onTap: () {
-        // Handle logout logic here
-      },
+      onTap: () => _showLogoutDialog(context),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -159,6 +157,44 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
+
+}
+// Logout Button
+
+// Show Logout Confirmation Dialog
+void _showLogoutDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Logout"),
+      content: const Text("Are you sure you want to logout?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context), // Close dialog
+          child:  Text("Cancel",style: AppStyle.normalText.copyWith(color: AppColor.normalTextColor),),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+          ),
+          onPressed: () {
+            Navigator.pop(context); // Close dialog
+            _handleLogout(context);  // Perform logout logic
+          },
+          child:  Text("Logout",style: AppStyle.normalText.copyWith(color: AppColor.cardColor),),
+        ),
+      ],
+    ),
+  );
+}
+
+// Handle actual logout logic here
+void _handleLogout(BuildContext context) {
+  // Example: Clear user session or navigate to login page
+  // Navigator.pushReplacementNamed(context, "/login");
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Logged out successfully!")),
+  );
 }
 
 // User Model
