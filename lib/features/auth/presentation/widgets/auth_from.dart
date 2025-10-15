@@ -16,6 +16,8 @@ class AuthForm extends StatelessWidget {
 
     return Card(
       elevation: 0,
+      color: AppColor.backgroundColor,
+
       shape: AppLayoutHelper.roundedRectangleBorder.copyWith(
         borderRadius: BorderRadius.circular(Dimensions.radiusDefault + 2),
         side: const BorderSide(width: 1, color: AppColor.disableColor),

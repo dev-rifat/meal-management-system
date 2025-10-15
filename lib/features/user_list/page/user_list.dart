@@ -148,7 +148,7 @@ class _UserListPageState extends State<UserListPage> {
       appBar: CustomAppBar(
         leadingWidth: 300,
         leading: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Text(
             "Member List",
             style: TextStyle(
@@ -160,11 +160,11 @@ class _UserListPageState extends State<UserListPage> {
         ),
         backgroundColor: AppColor.backgroundColor,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: TextField(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          children: [
+            TextField(
               controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search users...",
@@ -178,67 +178,66 @@ class _UserListPageState extends State<UserListPage> {
               ),
               onChanged: _filterUsers,
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: displayedUsers.length,
-              padding: EdgeInsets.zero,
-              itemBuilder: (context, index) {
-                final user = displayedUsers[index];
-                return Container(
-                  margin: const EdgeInsets.all(12),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 25,
-                      backgroundImage: NetworkImage(user.profileImage),
+            Expanded(
+              child: ListView.builder(
+                itemCount: displayedUsers.length,
+                padding: EdgeInsets.zero,
+                itemBuilder: (context, index) {
+                  final user = displayedUsers[index];
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(user.username),
-                        Text(user.email),
-                        Text("Joined: ${DateFormat.yMMMd().format(user.joiningDate)}",
-                            style: const TextStyle(fontSize: 12)),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Payment: ${user.paymentStatus} (${DateFormat.yMMMd().format(user.paymentDate)})",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: user.paymentStatus == "Due" ? Colors.red : Colors.green,
-                            fontWeight: FontWeight.w600,
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        radius: 25,
+                        backgroundImage: NetworkImage(user.profileImage),
+                      ),
+                      title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(user.username),
+                          Text(user.email),
+                          Text("Joined: ${DateFormat.yMMMd().format(user.joiningDate)}",
+                              style: const TextStyle(fontSize: 12)),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Payment: ${user.paymentStatus} (${DateFormat.yMMMd().format(user.paymentDate)})",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: user.paymentStatus == "Due" ? Colors.red : Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      isThreeLine: true,
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == "delete") _confirmDelete(user);
+                          if (value == "update") _confirmUpdate(user);
+                        },
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(
+                            value: "update",
+                            child: Text("Update"),
+                          ),
+                          const PopupMenuItem(
+                            value: "delete",
+                            child: Text("Delete"),
+                          ),
+                        ],
+                      ),
                     ),
-                    isThreeLine: true,
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == "delete") _confirmDelete(user);
-                        if (value == "update") _confirmUpdate(user);
-                      },
-                      itemBuilder: (_) => [
-                        const PopupMenuItem(
-                          value: "update",
-                          child: Text("Update"),
-                        ),
-                        const PopupMenuItem(
-                          value: "delete",
-                          child: Text("Delete"),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

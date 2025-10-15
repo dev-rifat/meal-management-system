@@ -31,6 +31,8 @@ class SignInScreen extends StatelessWidget {
     ResponsiveLayout.init(context);
 
     return Scaffold(
+      backgroundColor: AppColor.backgroundColor,
+
       body: Padding(
         padding: AppLayoutHelper.horizontalMargin(),
         child: SingleChildScrollView(

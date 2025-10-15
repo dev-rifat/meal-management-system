@@ -45,7 +45,11 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.backgroundColor,
+
       appBar: AppBar(
+        backgroundColor: AppColor.backgroundColor,
+
         title: Text(isMessSignup ? "Create Mess" : "Signup"),
         centerTitle: true,
       ),

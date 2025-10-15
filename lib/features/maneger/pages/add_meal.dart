@@ -88,15 +88,19 @@ class _AddMealState extends State<AddMeal> {
 
   /// Add custom meal type
   void _addCustomMeal() {
-    String mealName = _mealNameController.text.trim();
+    final mealName = _mealNameController.text.trim();
+
     if (mealName.isNotEmpty && !_meals.containsKey(mealName)) {
-      setState(() {
-        _meals[mealName] = 0.5;
-        _mealNameController.clear();
-        Navigator.pop(context);
-      });
+      if (mounted) {
+        setState(() {
+          _meals[mealName] = 0.5;
+          _mealNameController.clear();
+        });
+      }
     }
   }
+
+
 
   /// Dialog to add new meal
   void _showAddMealDialog() {
@@ -113,7 +117,7 @@ class _AddMealState extends State<AddMeal> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: (){},
             child: const Text("Cancel"),
           ),
           ElevatedButton(
@@ -150,8 +154,9 @@ class _AddMealState extends State<AddMeal> {
     final bool isManager = widget.role == "manager";
 
     return Scaffold(
+
       appBar: CustomAppBar(
-        title: isManager ? "Add Meal (Manager)" : "Add My Meal",
+        title: "Add Meal",
         backgroundColor: Colors.white,
       ),
       backgroundColor: Colors.white,

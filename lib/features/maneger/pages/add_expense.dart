@@ -42,7 +42,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // White background
+      backgroundColor: AppColor.backgroundColor,
       appBar: _appBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

@@ -1,10 +1,12 @@
-// lib/features/main/main_nav_screen.dart
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:mass_management/utils/app_color.dart';
 import 'package:mass_management/features/deashboard/pages/dashboard_screen.dart';
 import 'package:mass_management/features/maneger/pages/manager_screen.dart';
 import 'package:mass_management/features/user_list/page/user_list.dart';
-import 'package:mass_management/utils/app_color.dart';
-import '../profile/pages/profile.dart' show ProfilePage;
+import 'package:mass_management/features/profile/pages/profile.dart';
+
+import '../maneger/pages/add_meal.dart';
 
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
@@ -13,47 +15,86 @@ class MainNavScreen extends StatefulWidget {
   State<MainNavScreen> createState() => _MainNavScreenState();
 }
 
-class _MainNavScreenState extends State<MainNavScreen>
-    with AutomaticKeepAliveClientMixin {
-  int _selectedIndex = 0;
+class _MainNavScreenState extends State<MainNavScreen> {
+  late PersistentTabController _controller;
 
-  final List<Widget> _screens = const [
-    DashboardScreen(),
-    MessManagerPage(),
-    UserListPage(),
-    ProfilePage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _controller = PersistentTabController(initialIndex: 0);
+  }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  /// List of tab screens
+  List<Widget> _buildScreens() {
+    return const [
+      DashboardScreen(),
+      MessManagerPage(),
+      AddMeal(),
+      UserListPage(),
+      ProfilePage(),
+    ];
+  }
+
+  /// Bottom navigation items
+  List<PersistentBottomNavBarItem> _navBarsItems() {
+    return [
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.store),
+        title: ("Home"),
+        activeColorPrimary: AppColor.primaryColor,
+        activeColorSecondary: AppColor.cardColor,
+
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.admin_panel_settings_outlined),
+        title: ("Manager"),
+        activeColorPrimary: AppColor.primaryColor,
+        activeColorSecondary: AppColor.cardColor,
+
+        inactiveColorPrimary: Colors.grey,
+      ), PersistentBottomNavBarItem(
+        icon: const Icon(Icons.add),
+        title: ("Add"),
+        activeColorSecondary: AppColor.cardColor,
+        activeColorPrimary: AppColor.primaryColor,
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.person_3_sharp),
+        title: ("Members"),
+        activeColorSecondary: AppColor.cardColor,
+
+        activeColorPrimary: AppColor.primaryColor,
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.person),
+        title: ("My Profile"),
+        activeColorSecondary: AppColor.cardColor,
+
+        activeColorPrimary: AppColor.primaryColor,
+        inactiveColorPrimary: Colors.grey,
+      ),
+    ];
   }
 
   @override
-  bool get wantKeepAlive => true; // Keeps state alive
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context); // required when using keepAlive
-    return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: AppColor.primaryColor,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.admin_panel_settings_outlined),
-              label: 'Manager'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_3_sharp), label: 'Members'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person), label: 'My profile'),
-        ],
+    return PersistentTabView(
+      context,
+      controller: _controller,
+      screens: _buildScreens(),
+      items: _navBarsItems(),
+      backgroundColor: AppColor.backgroundColor,
+      handleAndroidBackButtonPress: true,
+      resizeToAvoidBottomInset: true,
+      stateManagement: true,
+      decoration: NavBarDecoration(
+        borderRadius: BorderRadius.circular(20.0),
+        colorBehindNavBar: Colors.white,
       ),
+      navBarStyle: NavBarStyle.style7, //  Style 15
     );
   }
 }
