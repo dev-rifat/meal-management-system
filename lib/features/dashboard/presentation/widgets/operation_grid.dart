@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mass_management/core/routes/app_route.dart';
+import 'package:mass_management/utils/app_color.dart';
 
+/// Pure navigation grid — no business data of its own, just routes to the
+/// meal list / wallet / monthly summary screens.
 class OperationGrid extends StatelessWidget {
   const OperationGrid({super.key});
 
@@ -11,8 +14,6 @@ class OperationGrid extends StatelessWidget {
       {"icon": Icons.list, "label": "Meal List"},
       {"icon": Icons.wallet, "label": "Wallet"},
       {"icon": Icons.event, "label": "Month Summary"},
-      // {"icon": Icons.money, "label": "Meal Summary"},
-      // {"icon": Icons.picture_as_pdf, "label": "Documents"},
     ];
 
     return GridView.builder(
@@ -28,14 +29,14 @@ class OperationGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = operations[index];
         return GestureDetector(
-          onTap: ()=>_onClick(index,context),
+          onTap: () => _onClick(index, context),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: Colors.blue.withOpacity(0.1), // AppColor removed for simplicity
-                child: Icon(item['icon'], color: Colors.blue.shade800),
+                backgroundColor: AppColor.primaryColor.withValues(alpha: 0.1),
+                child: Icon(item['icon'], color: AppColor.primaryColor),
               ),
               const SizedBox(height: 6),
               Text(
@@ -58,21 +59,11 @@ class OperationGrid extends StatelessWidget {
 
       case 1:
         context.push(AppRoute.myWallet);
-
         break;
 
       case 2:
-       context.push(AppRoute.monthlySummary);
-        break;
-
-      case 3:
-       // context.push(AppRoute.helpCenter);
-        break;
-
-      default:
-       // print('Invalid index: $index');
+        context.push(AppRoute.monthlySummary);
         break;
     }
   }
-
 }

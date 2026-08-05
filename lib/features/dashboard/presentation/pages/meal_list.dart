@@ -1,38 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
+import 'package:mass_management/core/widgets/custom_onloading.dart';
+import 'package:mass_management/features/dashboard/domain/entities/meal_record.dart';
+import 'package:mass_management/features/dashboard/presentation/cubit/meal_list_cubit.dart';
+import 'package:mass_management/features/dashboard/presentation/cubit/meal_list_state.dart';
 import 'package:mass_management/utils/app_color.dart';
 import 'package:mass_management/utils/app_style.dart';
 
-class MealDetailsPage extends StatefulWidget {
+class MealDetailsPage extends StatelessWidget {
   const MealDetailsPage({super.key});
 
   @override
-  State<MealDetailsPage> createState() => _MealDetailsPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => GetIt.instance<MealListCubit>()..load(),
+      child: const _MealDetailsView(),
+    );
+  }
 }
 
-class _MealDetailsPageState extends State<MealDetailsPage> {
-  DateTime selectedDate = DateTime.now();
-  String selectedFilter = "This Month";
+class _MealDetailsView extends StatelessWidget {
+  const _MealDetailsView();
 
-  // Horizontal filter selections
-  String selectedCategory = "All";
-  String selectedStatusFilter = "All";
-
-  final double breakfast = 0.5;
-  final double lunch = 1.0;
-  final double dinner = 1.0;
-
-  List<String> statuses = [
-    "Pending", "Approved", "Rejected", "Pending", "Approved", "Rejected",
-    "Pending", "Approved", "Rejected", "Pending", "Approved", "Rejected"
+  static const List<MapEntry<String, MonthFilter>> _monthFilters = [
+    MapEntry("This Month", MonthFilter.thisMonth),
+    MapEntry("Last Month", MonthFilter.lastMonth),
+    MapEntry("Custom", MonthFilter.custom),
   ];
 
-  final List<String> statusFilters = ["All", "Pending", "Approved", "Rejected"];
+  static const List<MealStatus?> _statusFilters = [
+    null,
+    MealStatus.pending,
+    MealStatus.approved,
+    MealStatus.rejected,
+  ];
+
+  String _statusLabel(MealStatus? status) => status?.label ?? "All";
 
   @override
   Widget build(BuildContext context) {
-    final double total = breakfast + lunch + dinner;
     final Size size = MediaQuery.of(context).size;
     final bool isSmallScreen = size.width < 360;
 
@@ -40,42 +49,40 @@ class _MealDetailsPageState extends State<MealDetailsPage> {
     final double fontSizeValue = isSmallScreen ? 14 : 16;
     final double iconSize = isSmallScreen ? 22 : 18;
 
-    // Apply status filter
-    List<String> filteredStatuses = statuses.where((status) {
-      if (selectedStatusFilter == "All") return true;
-      return status == selectedStatusFilter;
-    }).toList();
-
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       appBar: CustomAppBar(
         title: "",
         backgroundColor: AppColor.backgroundColor,
         elevation: 0,
-
         actions: [
           /// ✅ Date Dropdown Filter
-          Container(
-            //width: double.infinity,
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: DropdownButton<String>(
-              value: selectedFilter,
-              underline: const SizedBox(),
-              items: const [
-                DropdownMenuItem(value: "This Month", child: Text("This Month")),
-                DropdownMenuItem(value: "Last Month", child: Text("Last Month")),
-                DropdownMenuItem(value: "Custom", child: Text("Custom")),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  selectedFilter = value!;
-                  if (value == "Custom") {
-                    _pickDate(context);
-                  }
-                });
-              },
-            ),
+          BlocBuilder<MealListCubit, MealListState>(
+            builder: (context, state) {
+              final monthFilter = state is MealListLoaded ? state.monthFilter : MonthFilter.thisMonth;
+              return Container(
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: DropdownButton<MonthFilter>(
+                  value: monthFilter,
+                  underline: const SizedBox(),
+                  items: _monthFilters
+                      .map((entry) => DropdownMenuItem(value: entry.value, child: Text(entry.key)))
+                      .toList(),
+                  onChanged: (value) async {
+                    if (value == null) return;
+                    final cubit = context.read<MealListCubit>();
+                    if (value == MonthFilter.custom) {
+                      final picked = await _pickDate(context);
+                      if (picked == null) return;
+                      cubit.changeMonthFilter(value, customDate: picked);
+                    } else {
+                      cubit.changeMonthFilter(value);
+                    }
+                  },
+                ),
+              );
+            },
           ),
         ],
         leading: IconButton(
@@ -85,64 +92,77 @@ class _MealDetailsPageState extends State<MealDetailsPage> {
       ),
       body: Column(
         children: [
-
-
-          /// ✅ Horizontal Filter Bar (Category + Status)
+          /// ✅ Horizontal Filter Bar (Status)
           Container(
             color: Colors.white,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  ...statusFilters.map((status) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: ChoiceChip(
-                      showCheckmark: false,
-                      elevation: 0,
-                      side: BorderSide.none,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-
-                      label: Text(status),
-                      selected: selectedStatusFilter == status,
-                      onSelected: (_) {
-                        setState(() {
-                          selectedStatusFilter = status;
-                        });
-                      },
-                      selectedColor: AppColor.primaryColor,
-                      backgroundColor: Colors.grey.shade200,
-                      labelStyle: TextStyle(
-                        color: selectedStatusFilter == status ? Colors.white : Colors.black,
-                      ),
-                    ),
-                  )),
-                ],
+              child: BlocBuilder<MealListCubit, MealListState>(
+                builder: (context, state) {
+                  final selected = state is MealListLoaded ? state.statusFilter : null;
+                  return Row(
+                    children: _statusFilters.map((status) {
+                      final label = _statusLabel(status);
+                      final isSelected = selected == status;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: ChoiceChip(
+                          showCheckmark: false,
+                          elevation: 0,
+                          side: BorderSide.none,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          label: Text(label),
+                          selected: isSelected,
+                          onSelected: (_) => context.read<MealListCubit>().changeStatusFilter(status),
+                          selectedColor: AppColor.primaryColor,
+                          backgroundColor: Colors.grey.shade200,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
               ),
             ),
           ),
 
           /// ✅ Filtered Meal Cards
           Expanded(
-            child: ListView.builder(
-              itemCount: filteredStatuses.length,
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8),
-              itemBuilder: (context, index) => MealCard(
-                date: selectedDate,
-                size: size,
-                iconSize: iconSize,
-                fontSizeTitle: fontSizeTitle,
-                fontSizeValue: fontSizeValue,
-                breakfast: breakfast,
-                lunch: lunch,
-                dinner: dinner,
-                total: total,
-                status: filteredStatuses[index],
-                onStatusChange: (newStatus) {
-                  setState(() {
-                    statuses[index] = newStatus;
-                  });
-                },
-              ),
+            child: BlocBuilder<MealListCubit, MealListState>(
+              builder: (context, state) {
+                if (state is MealListError) {
+                  return Center(child: Text(state.message));
+                }
+                if (state is! MealListLoaded) {
+                  return LoadingHelper.defaultLoading();
+                }
+
+                final meals = state.meals;
+                return ListView.builder(
+                  itemCount: meals.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8),
+                  itemBuilder: (context, index) {
+                    final meal = meals[index];
+                    return MealCard(
+                      date: meal.date,
+                      size: size,
+                      iconSize: iconSize,
+                      fontSizeTitle: fontSizeTitle,
+                      fontSizeValue: fontSizeValue,
+                      breakfast: meal.breakfast,
+                      lunch: meal.lunch,
+                      dinner: meal.dinner,
+                      total: meal.total,
+                      status: meal.status,
+                      onStatusChange: (newStatus) {
+                        context.read<MealListCubit>().updateStatus(meal.id, newStatus);
+                      },
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
@@ -150,18 +170,14 @@ class _MealDetailsPageState extends State<MealDetailsPage> {
     );
   }
 
-  Future<void> _pickDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  Future<DateTime?> _pickDate(BuildContext context) {
+    final now = DateTime.now();
+    return showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: now,
       firstDate: DateTime(2023),
       lastDate: DateTime(2030),
     );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
   }
 }
 
@@ -171,8 +187,8 @@ class MealCard extends StatelessWidget {
   final Size size;
   final double iconSize, fontSizeTitle, fontSizeValue;
   final double breakfast, lunch, dinner, total;
-  final String status;
-  final ValueChanged<String> onStatusChange;
+  final MealStatus status;
+  final ValueChanged<MealStatus> onStatusChange;
 
   const MealCard({
     super.key,
@@ -189,13 +205,13 @@ class MealCard extends StatelessWidget {
     required this.onStatusChange,
   });
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(MealStatus status) {
     switch (status) {
-      case "Approved":
+      case MealStatus.approved:
         return Colors.green;
-      case "Rejected":
+      case MealStatus.rejected:
         return Colors.red;
-      default:
+      case MealStatus.pending:
         return Colors.orange;
     }
   }
@@ -248,63 +264,59 @@ class MealCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        (status == "Pending")
-                            ? PopupMenuButton<String>(
-                          onSelected: onStatusChange,
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(value: "Approved", child: Text("Approve")),
-                            const PopupMenuItem(value: "Rejected", child: Text("Reject")),
-                          ],
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(status).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  status,
+                        (status == MealStatus.pending)
+                            ? PopupMenuButton<MealStatus>(
+                                onSelected: onStatusChange,
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(value: MealStatus.approved, child: Text("Approve")),
+                                  const PopupMenuItem(value: MealStatus.rejected, child: Text("Reject")),
+                                ],
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: _getStatusColor(status).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        status.label,
+                                        style: AppStyle.normalText.copyWith(
+                                          color: _getStatusColor(status),
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: fontSizeTitle,
+                                        ),
+                                      ),
+                                      const Icon(Icons.arrow_drop_down, size: 20),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(status).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  status.label,
                                   style: AppStyle.normalText.copyWith(
                                     color: _getStatusColor(status),
                                     fontWeight: FontWeight.w500,
                                     fontSize: fontSizeTitle,
                                   ),
                                 ),
-                                const Icon(Icons.arrow_drop_down, size: 20),
-                              ],
-                            ),
-                          ),
-                        )
-                            : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(status).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            status,
-                            style: AppStyle.normalText.copyWith(
-                              color: _getStatusColor(status),
-                              fontWeight: FontWeight.w500,
-                              fontSize: fontSizeTitle,
-                            ),
-                          ),
-                        ),
+                              ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        MealItem("Breakfast", breakfast, Icons.free_breakfast,
-                            iconSize, fontSizeTitle, fontSizeValue),
-                        MealItem("Lunch", lunch, Icons.lunch_dining, iconSize,
-                            fontSizeTitle, fontSizeValue),
-                        MealItem("Dinner", dinner, Icons.dinner_dining, iconSize,
-                            fontSizeTitle, fontSizeValue),
-                        MealItem("Total", total, Icons.summarize, iconSize,
-                            fontSizeTitle, fontSizeValue),
+                        MealItem("Breakfast", breakfast, Icons.free_breakfast, iconSize, fontSizeTitle, fontSizeValue),
+                        MealItem("Lunch", lunch, Icons.lunch_dining, iconSize, fontSizeTitle, fontSizeValue),
+                        MealItem("Dinner", dinner, Icons.dinner_dining, iconSize, fontSizeTitle, fontSizeValue),
+                        MealItem("Total", total, Icons.summarize, iconSize, fontSizeTitle, fontSizeValue),
                       ],
                     ),
                   ],
@@ -324,9 +336,7 @@ class MealItem extends StatelessWidget {
   final IconData icon;
   final double iconSize, titleSize, valueSize;
 
-  const MealItem(this.title, this.value, this.icon, this.iconSize,
-      this.titleSize, this.valueSize,
-      {super.key});
+  const MealItem(this.title, this.value, this.icon, this.iconSize, this.titleSize, this.valueSize, {super.key});
 
   @override
   Widget build(BuildContext context) {

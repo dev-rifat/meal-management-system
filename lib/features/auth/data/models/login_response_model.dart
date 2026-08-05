@@ -1,48 +1,68 @@
-class LoginResModel {
-  String? accessToken;
-  String? refreshToken;
-  int? id;
-  String? username;
-  String? email;
-  String? firstName;
-  String? lastName;
-  String? gender;
-  String? image;
+import 'package:mass_management/features/auth/domain/entities/auth_user.dart';
 
-  LoginResModel(
-      {this.accessToken,
-        this.refreshToken,
-        this.id,
-        this.username,
-        this.email,
-        this.firstName,
-        this.lastName,
-        this.gender,
-        this.image});
+/// Data-layer DTO for the `POST /auth/login` response body (shaped after
+/// dummyjson.com's demo auth API). Maps to the domain [AuthUser] via
+/// [toEntity] — nothing outside `data/` should touch this class directly.
+class LoginResponseModel {
+  final String? accessToken;
+  final String? refreshToken;
+  final int? id;
+  final String? username;
+  final String? email;
+  final String? firstName;
+  final String? lastName;
+  final String? gender;
+  final String? image;
 
-  LoginResModel.fromJson(Map<String, dynamic> json) {
-    accessToken = json['accessToken'];
-    refreshToken = json['refreshToken'];
-    id = json['id'];
-    username = json['username'];
-    email = json['email'];
-    firstName = json['firstName'];
-    lastName = json['lastName'];
-    gender = json['gender'];
-    image = json['image'];
+  const LoginResponseModel({
+    this.accessToken,
+    this.refreshToken,
+    this.id,
+    this.username,
+    this.email,
+    this.firstName,
+    this.lastName,
+    this.gender,
+    this.image,
+  });
+
+  factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
+    return LoginResponseModel(
+      accessToken: json['accessToken'] as String?,
+      refreshToken: json['refreshToken'] as String?,
+      id: json['id'] as int?,
+      username: json['username'] as String?,
+      email: json['email'] as String?,
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      gender: json['gender'] as String?,
+      image: json['image'] as String?,
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['accessToken'] = this.accessToken;
-    data['refreshToken'] = this.refreshToken;
-    data['id'] = this.id;
-    data['username'] = this.username;
-    data['email'] = this.email;
-    data['firstName'] = this.firstName;
-    data['lastName'] = this.lastName;
-    data['gender'] = this.gender;
-    data['image'] = this.image;
-    return data;
+  Map<String, dynamic> toJson() => {
+        'accessToken': accessToken,
+        'refreshToken': refreshToken,
+        'id': id,
+        'username': username,
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'gender': gender,
+        'image': image,
+      };
+
+  AuthUser toEntity() {
+    final fullName = [firstName, lastName]
+        .whereType<String>()
+        .where((part) => part.isNotEmpty)
+        .join(' ');
+
+    return AuthUser(
+      id: id ?? 0,
+      name: fullName.isNotEmpty ? fullName : (username ?? ''),
+      email: email ?? '',
+      token: accessToken ?? '',
+    );
   }
 }

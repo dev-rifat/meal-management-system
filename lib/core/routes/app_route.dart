@@ -3,7 +3,7 @@ class AppRoute {
 
   static String splash = "/splash";
   static String login = "/sign_in";
-  static String deashboard = "/deashboard_screen";
+  static String dashboard = "/dashboard_screen";
   static String addExpense = "/add_meal_screen";
   static String addMeal = "/entry_meal_screen";
   static String addShareExpense = "/add_share_expense_screen";

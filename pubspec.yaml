@@ -48,6 +48,8 @@ dependencies:
   flutter_zoom_drawer:
   month_picker_dialog:
   persistent_bottom_nav_bar: ^6.2.1
+  get_it: ^7.7.0
+  cached_network_image: ^3.4.1
 
 
 dev_dependencies:
@@ -60,6 +62,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  bloc_test: ^9.1.7
+  mocktail: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following pages: https://dart.dev/tools/pub/pubspec

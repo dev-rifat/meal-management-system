@@ -6,6 +6,8 @@ import 'app_color.dart';
 ThemeData get appTheme => _themeData;
 
 ThemeData _themeData = ThemeData(
+  useMaterial3: true,
+  fontFamily: "Montserrat",
   appBarTheme: const AppBarTheme(
     iconTheme: IconThemeData(color: Colors.black),
      foregroundColor: Colors.black,

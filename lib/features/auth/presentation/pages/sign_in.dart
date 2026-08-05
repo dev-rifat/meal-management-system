@@ -2,75 +2,96 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mass_management/core/routes/app_route.dart';
-import 'package:mass_management/core/utils/app_layout_helper.dart'
-    show AppLayoutHelper;
 import 'package:mass_management/core/widgets/custom_app_button.dart';
-import 'package:mass_management/features/auth/domain/login_req_model.dart';
-import 'package:mass_management/features/auth/presentation/blog/blog_state.dart';
-import 'package:mass_management/features/auth/presentation/blog/login_event_state.dart';
-import 'package:mass_management/features/auth/presentation/blog/login_state.dart';
-import 'package:mass_management/features/auth/presentation/widgets/auth_from.dart'
-    show AuthForm;
-import '../../../../core/utils/app_spacer.dart' show customSpacerHeight;
+import 'package:mass_management/core/widgets/success_message.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
+import 'package:mass_management/features/auth/presentation/widgets/auth_form.dart'
+    show AuthForm, AuthFormState;
 import '../../../../utils/app_color.dart';
-import '../../../../utils/app_layout.dart';
 import '../../../../utils/app_string.dart';
 import '../../../../utils/app_style.dart';
 import '../../../../utils/dimensions.dart';
 import '../widgets/common_widget.dart';
 
-class SignInScreen extends StatelessWidget {
-  SignInScreen({super.key});
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
 
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _authFormKey = GlobalKey<AuthFormState>();
 
+  void _handleLoginPressed() {
+    // Validate the surrounding Form, then ask AuthForm to hand back the
+    // email/password it's actually holding instead of firing hardcoded values.
+    if (_formKey.currentState?.validate() ?? false) {
+      _authFormKey.currentState?.submit();
+    }
+  }
 
+  void _handleAuthFormSubmit(String email, String password) {
+    context.read<AuthBloc>().add(
+          LoginRequested(email: email, password: password),
+        );
+  }
 
   @override
   Widget build(BuildContext context) {
-    ResponsiveLayout.init(context);
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          context.go(AppRoute.dashboard);
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColor.backgroundColor,
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildTitleText(context),
+                    const SizedBox(height: 30),
 
-    return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+                    AuthForm(
+                      key: _authFormKey,
+                      onSubmit: _handleAuthFormSubmit,
+                    ),
 
-      body: Padding(
-        padding: AppLayoutHelper.horizontalMargin(),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildTitleText(context),
-                  customSpacerHeight(height: 30),
+                    const SizedBox(height: 4),
 
-                  AuthForm(onSubmit: (username, password) {
+                    _buildForgotPassword(context),
 
-                    print(username);
-                    
-                  }),
+                    const SizedBox(height: 30),
 
-                  customSpacerHeight(height: 4),
+                    _buildLoginButton(context),
 
-                  _buildForgotPassword(),
+                    const SizedBox(height: 24),
 
-                  customSpacerHeight(height: 30),
+                    guestButtonLayout(context),
 
-                  _buildLoginButton(context),
+                    const SizedBox(height: 30),
 
-                  customSpacerHeight(height: 24),
+                    _buildNewUserCreate(context),
 
-                  guestButtonLayout(context),
-
-                  customSpacerHeight(height: 30),
-
-                  _buildNewUserCreate(context),
-
-                  customSpacerHeight(height: 76),
-                ],
+                    const SizedBox(height: 76),
+                  ],
+                ),
               ),
             ),
           ),
@@ -88,12 +109,14 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildForgotPassword() {
+  Widget _buildForgotPassword(BuildContext context) {
     return Row(
       children: [
         const Spacer(),
         GestureDetector(
-          onTap: () {},
+          // The dedicated forgot-password screen was removed as dead code;
+          // there's nowhere to navigate yet, so just acknowledge the tap.
+          onTap: () => showSuccessMessage(message: "Coming soon"),
           child: Text("Forgot password?", style: AppStyle.normalText),
         ),
       ],
@@ -101,47 +124,36 @@ class SignInScreen extends StatelessWidget {
   }
 
   Widget _buildLoginButton(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state is AuthLoading) {
+          return const CircularProgressIndicator();
+        }
 
-
-      if(state is LoginLoading){
-        return const CircularProgressIndicator();
-      }
-
-      return  CustomAppButton(
-        text: "Login",
-        widget: Text(
-          "Login",
-          style: AppStyle.titleText.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColor.cardColor,
-            fontSize: ResponsiveLayout.scaleText(Dimensions.fontSizeMid),
-          ),
-        ),
-        buttonRadius: Dimensions.radiusDefault,
-        buttonColor: AppColor.primaryColor,
-        onPressed: (){
-          BlocProvider.of<LoginBloc>(context).add(
-            LoginReqEvent(
-              rqModel: LoginReqModel(email: "username", password: "password"),
+        return CustomAppButton(
+          text: "Login",
+          widget: Text(
+            "Login",
+            style: AppStyle.titleText.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColor.cardColor,
+              fontSize: Dimensions.fontSizeMid,
             ),
-          );
-        },
-      );
-
-
-    },);
+          ),
+          buttonRadius: Dimensions.radiusDefault,
+          buttonColor: AppColor.primaryColor,
+          onPressed: _handleLoginPressed,
+        );
+      },
+    );
   }
-
-
-
 
   Widget _buildNewUserCreate(BuildContext context) {
     return createUserAccount(
       context: context,
       firstText: "New user? ",
-      endText: AppString.text_sign_up,
-      onAction: ()=>context.push(AppRoute.signUp),
+      endText: AppString.textSignUp,
+      onAction: () => context.push(AppRoute.signUp),
     );
   }
 }

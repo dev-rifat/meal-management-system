@@ -1,43 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
-
-// void main() => runApp(const MyApp());
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
-//       home:  ZoomDrawerExample(),
-//     );
-//   }
-// }
-
-class ZoomDrawerExample extends StatelessWidget {
-   ZoomDrawerExample({super.key});
-
-  final _drawerController = ZoomDrawerController();
-
-  @override
-  Widget build(BuildContext context) {
-    return ZoomDrawer(
-      controller: _drawerController,
-      menuScreen: MenuScreen(onItemClick: (item) {
-        _drawerController.close?.call();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Navigate to: $item')));
-      }),
-      mainScreen: HomeScreen(onMenuTap: () => _drawerController.toggle?.call()),
-      borderRadius: 24,
-      showShadow: true,
-      angle: 0,
-      slideWidth: MediaQuery.of(context).size.width * 0.75,
-      menuBackgroundColor: Colors.deepPurple.shade100,
-    );
-  }
-}
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback onMenuTap;

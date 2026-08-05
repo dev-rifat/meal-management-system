@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:mass_management/core/di/service_locator.dart';
 import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/features/deashboard/pages/dashboard_screen.dart';
-import 'package:mass_management/features/maneger/pages/manager_screen.dart';
-import 'package:mass_management/features/user_list/page/user_list.dart';
-import 'package:mass_management/features/profile/pages/profile.dart';
+import 'package:mass_management/features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:mass_management/features/manager/presentation/cubit/add_meal_cubit.dart';
+import 'package:mass_management/features/manager/presentation/cubit/manager_summary_cubit.dart';
+import 'package:mass_management/features/manager/presentation/pages/manager_screen.dart';
+import 'package:mass_management/features/members/presentation/cubit/members_cubit.dart';
+import 'package:mass_management/features/members/presentation/pages/member_list_page.dart';
+import 'package:mass_management/features/profile/presentation/pages/profile.dart';
 
-import '../maneger/pages/add_meal.dart';
+import '../manager/presentation/pages/add_meal.dart';
 
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
@@ -24,14 +29,26 @@ class _MainNavScreenState extends State<MainNavScreen> {
     _controller = PersistentTabController(initialIndex: 0);
   }
 
-  /// List of tab screens
+  /// List of tab screens. Tabs whose page reads a cubit via `context.read`
+  /// (instead of resolving it from GetIt internally) get their own
+  /// `BlocProvider` here since `PersistentTabView` mounts each tab directly,
+  /// not through `app_page.dart`'s go_router routes.
   List<Widget> _buildScreens() {
-    return const [
-      DashboardScreen(),
-      MessManagerPage(),
-      AddMeal(),
-      UserListPage(),
-      ProfilePage(),
+    return [
+      const DashboardScreen(),
+      BlocProvider(
+        create: (_) => sl<ManagerSummaryCubit>()..loadSummary(),
+        child: const MessManagerPage(),
+      ),
+      BlocProvider(
+        create: (_) => sl<AddMealCubit>(),
+        child: AddMeal(),
+      ),
+      BlocProvider(
+        create: (_) => sl<MembersCubit>(),
+        child: const MemberListPage(),
+      ),
+      const ProfilePage(),
     ];
   }
 

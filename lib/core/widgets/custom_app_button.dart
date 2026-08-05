@@ -12,80 +12,74 @@ class CustomAppButton extends StatelessWidget {
   final Widget? prefixWidget;
   final Widget? suffixWidget;
   final double borderWidth;
-  final Function? onPressed;
+  final VoidCallback? onPressed;
   final TextStyle? btnTextStyle;
 
-  const CustomAppButton(
-      {super.key,
-        this.text = "",
-        this.widget,
-        this.btnBorderColor = Colors.transparent,
-        this.borderWidth = 1.0,
-        this.buttonHeight = 48,
-        this.buttonWidth,
-        this.prefixWidget,
-        this.suffixWidget,
-        this.btnTextStyle,
-        this.buttonColor = Colors.blue,
-        this.buttonTextColor = Colors.white,
-        this.onPressed,
-        this.buttonRadius = 30});
+  const CustomAppButton({
+    super.key,
+    this.text = "",
+    this.widget,
+    this.btnBorderColor = Colors.transparent,
+    this.borderWidth = 1.0,
+    this.buttonHeight = 48,
+    this.buttonWidth,
+    this.prefixWidget,
+    this.suffixWidget,
+    this.btnTextStyle,
+    this.buttonColor = Colors.blue,
+    this.buttonTextColor = Colors.white,
+    this.onPressed,
+    this.buttonRadius = 30,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      ///Button click action
-      onTap: () => onPressed == null ? null : onPressed!(),
-      child: Container(
-        height: buttonHeight,
-        width: buttonWidth ?? MediaQuery.of(context).size.width,
-
-        ///Button style
-        decoration: _buttonStyle(),
-        child: Center(
-          child: widget ??
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  /// Prefix widget
-                  prefixWidget ?? Container(),
-                  _spacer(),
-                  Expanded(
-                    child: Text(
-
-                      text,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-
-                      ///Button text style
-                      style: _textStyle(),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(buttonRadius),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(buttonRadius),
+        child: Container(
+          height: buttonHeight,
+          width: buttonWidth,
+          decoration: _buttonDecoration(),
+          child: Center(
+            child: widget ??
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    prefixWidget ?? const SizedBox.shrink(),
+                    _spacer(),
+                    Expanded(
+                      child: Text(
+                        text,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: _textStyle(),
+                      ),
                     ),
-                  ),
-                  _spacer(),
-
-                  /// Suffix widget
-                  suffixWidget ?? Container()
-                ],
-              ),
+                    _spacer(),
+                    suffixWidget ?? const SizedBox.shrink(),
+                  ],
+                ),
+          ),
         ),
       ),
     );
   }
 
-  _buttonStyle() {
+  BoxDecoration _buttonDecoration() {
     return BoxDecoration(
-        border: Border.all(width: borderWidth, color: btnBorderColor),
-        color: buttonColor,
-        borderRadius: BorderRadius.circular(buttonRadius));
+      border: Border.all(width: borderWidth, color: btnBorderColor),
+      color: buttonColor,
+      borderRadius: BorderRadius.circular(buttonRadius),
+    );
   }
 
-  _textStyle() {
+  TextStyle _textStyle() {
     return btnTextStyle ?? TextStyle(color: buttonTextColor, fontSize: 17);
   }
 
-  _spacer() {
-    return const SizedBox(
-      width: 12,
-    );
-  }
+  Widget _spacer() => const SizedBox(width: 12);
 }

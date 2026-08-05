@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:mass_management/features/dashboard/domain/entities/transaction.dart';
 import 'package:mass_management/utils/app_style.dart';
 
+/// Renders a list of [Transaction]s. Reused by both the dashboard screen's
+/// "Transaction History" section and the wallet screen's "My Transactions"
+/// section — both are fed by the same `GetTransactionsUseCase` via their
+/// respective cubits, so this widget only ever needs to render, not fetch.
 class TransactionScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> transactions = [
-    {"title": "Deposit", "date": "2025-07-29", "amount": "8.00 ৳"},
-    {"title": "Shared Expense", "date": "2025-07-29", "amount": "100.00 ৳"},
-    {"title": "Personal Expense", "date": "2025-07-29", "amount": "100.00 ৳"},
-    {"title": "Food Cost", "date": "2025-07-29", "amount": "100.00 ৳"},
-    {"title": "Deposit", "date": "2025-07-29", "amount": "600.00 ৳"},
-  ];
+  final List<Transaction> transactions;
+
+  const TransactionScreen({super.key, required this.transactions});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,6 @@ class TransactionScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
-            // boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
           ),
           child: ListTile(
             leading: const CircleAvatar(
@@ -31,15 +32,15 @@ class TransactionScreen extends StatelessWidget {
               child: Icon(Icons.person, color: Colors.white),
             ),
             title: Text(
-              transaction["title"],
+              transaction.title,
               style: AppStyle.normalText,
             ),
             subtitle: Text(
-              transaction["date"],
+              DateFormat('yyyy-MM-dd').format(transaction.date),
               style: AppStyle.normalText.copyWith(fontSize: 12),
             ),
             trailing: Text(
-              transaction["amount"],
+              "${transaction.amount.toStringAsFixed(2)} ৳",
               style: AppStyle.normalText,
             ),
           ),

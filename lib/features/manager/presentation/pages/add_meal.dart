@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/core/widgets/custom_app_button.dart';
+import 'package:mass_management/core/widgets/success_message.dart';
+import 'package:mass_management/features/manager/presentation/cubit/add_meal_cubit.dart';
+import 'package:mass_management/features/manager/presentation/cubit/add_meal_state.dart';
 import 'package:mass_management/utils/app_color.dart';
 import 'package:mass_management/utils/app_style.dart';
+
+/// Placeholder value in the manager's member dropdown meaning "nothing
+/// selected yet" — kept separate from the real, cubit-loaded member names.
+const String _selectMemberPlaceholder = "Select Member";
 
 class AddMeal extends StatefulWidget {
   final String role; // "manager" or "member"
@@ -21,14 +29,6 @@ class AddMeal extends StatefulWidget {
 class _AddMealState extends State<AddMeal> {
   DateTime selectedDate = DateTime.now();
 
-  // Dummy user list (replace with API data or GetX controller)
-  final List<String> _users = [
-    "Select Member",
-    "Rifat Hasan",
-    "Abdullah Al Mamun",
-    "Sabbir Ahmed",
-  ];
-
   late String selectedUser;
 
   // Meals (default)
@@ -44,9 +44,14 @@ class _AddMealState extends State<AddMeal> {
   void initState() {
     super.initState();
     // Default selected user
-    selectedUser = widget.role == "manager"
-        ? "Select Member"
-        : widget.currentUserName;
+    selectedUser = widget.role == "manager" ? _selectMemberPlaceholder : widget.currentUserName;
+    context.read<AddMealCubit>().loadMembers();
+  }
+
+  @override
+  void dispose() {
+    _mealNameController.dispose();
+    super.dispose();
   }
 
   /// Change meal count
@@ -67,6 +72,7 @@ class _AddMealState extends State<AddMeal> {
     );
 
     if (pickedDate != null) {
+      if (!mounted) return;
       TimeOfDay? pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(selectedDate),
@@ -100,8 +106,6 @@ class _AddMealState extends State<AddMeal> {
     }
   }
 
-
-
   /// Dialog to add new meal
   void _showAddMealDialog() {
     showDialog(
@@ -117,7 +121,7 @@ class _AddMealState extends State<AddMeal> {
         ),
         actions: [
           TextButton(
-            onPressed: (){},
+            onPressed: () => Navigator.pop(context),
             child: const Text("Cancel"),
           ),
           ElevatedButton(
@@ -125,7 +129,7 @@ class _AddMealState extends State<AddMeal> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColor.primaryColor,
             ),
-            child:  Text("Add",style: AppStyle.normalText.copyWith(color: Colors.white),),
+            child: Text("Add", style: AppStyle.normalText.copyWith(color: Colors.white)),
           ),
         ],
       ),
@@ -134,19 +138,19 @@ class _AddMealState extends State<AddMeal> {
 
   /// Submit meals
   void _submitMeal() {
-    if (widget.role == "manager" && selectedUser == "Select Member") {
+    if (widget.role == "manager" && selectedUser == _selectMemberPlaceholder) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select a member first.")),
       );
       return;
     }
 
-    debugPrint("Role: ${widget.role}");
-    debugPrint("User: $selectedUser");
-    debugPrint("Date: $selectedDate");
-    debugPrint("Meals: $_meals");
-
-    // TODO: Save meal data logic here
+    context.read<AddMealCubit>().submit(
+          date: selectedDate,
+          mealCounts: _meals,
+          submittedFor: selectedUser,
+          role: widget.role,
+        );
   }
 
   @override
@@ -154,161 +158,182 @@ class _AddMealState extends State<AddMeal> {
     final bool isManager = widget.role == "manager";
 
     return Scaffold(
-
       appBar: CustomAppBar(
         title: "Add Meal",
         backgroundColor: Colors.white,
       ),
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(16),//tesr git
-        child: Column(
-          children: [
-            /// Date Picker
-            GestureDetector(
-              onTap: _pickDateTime,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade400),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "${selectedDate.day.toString().padLeft(2, '0')}-"
-                          "${selectedDate.month.toString().padLeft(2, '0')}-"
-                          "${selectedDate.year}  "
-                          "${selectedDate.hour.toString().padLeft(2, '0')}:"
-                          "${selectedDate.minute.toString().padLeft(2, '0')} ${selectedDate.hour >= 12 ? 'PM' : 'AM'}",
-                      style: const TextStyle(fontSize: 16, color: Colors.black87),
-                    ),
-                    const Icon(Icons.calendar_today, color: AppColor.primaryColor),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// Manager Only: User Selector
-            if (isManager)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedUser,
-                    isExpanded: true,
-                    items: _users.map((user) {
-                      return DropdownMenuItem<String>(
-                        value: user,
-                        child: Text(
-                          user,
-                          style: TextStyle(
-                            color: user == "Select Member"
-                                ? Colors.grey.shade600
-                                : Colors.black,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedUser = value!;
-                      });
-                    },
+      body: BlocListener<AddMealCubit, AddMealState>(
+        listener: (context, state) {
+          if (state.status == AddMealStatus.success) {
+            showSuccessMessage(message: "Meal added");
+            Navigator.pop(context);
+          } else if (state.status == AddMealStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage ?? "Something went wrong")),
+            );
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              /// Date Picker
+              GestureDetector(
+                onTap: _pickDateTime,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey.shade400),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "${selectedDate.day.toString().padLeft(2, '0')}-"
+                        "${selectedDate.month.toString().padLeft(2, '0')}-"
+                        "${selectedDate.year}  "
+                        "${selectedDate.hour.toString().padLeft(2, '0')}:"
+                        "${selectedDate.minute.toString().padLeft(2, '0')} ${selectedDate.hour >= 12 ? 'PM' : 'AM'}",
+                        style: const TextStyle(fontSize: 16, color: Colors.black87),
+                      ),
+                      const Icon(Icons.calendar_today, color: AppColor.primaryColor),
+                    ],
                   ),
                 ),
               ),
 
+              const SizedBox(height: 20),
 
-            const SizedBox(height: 20),
-
-            /// Header Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Meals",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-                IconButton(
-                  onPressed: _showAddMealDialog,
-                  icon: const Icon(Icons.add_circle, color: AppColor.primaryColor, size: 30),
-                  tooltip: "Add custom meal",
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            /// Meal List
-            Expanded(
-              child: ListView.separated(
-                itemCount: _meals.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  String meal = _meals.keys.elementAt(index);
-                  double value = _meals[meal]!;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
+              /// Manager Only: User Selector
+              if (isManager)
+                BlocBuilder<AddMealCubit, AddMealState>(
+                  builder: (context, state) {
+                    final dropdownUsers = [_selectMemberPlaceholder, ...state.members];
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: dropdownUsers.contains(selectedUser)
+                              ? selectedUser
+                              : _selectMemberPlaceholder,
+                          isExpanded: true,
+                          items: dropdownUsers.map((user) {
+                            return DropdownMenuItem<String>(
+                              value: user,
+                              child: Text(
+                                user,
+                                style: TextStyle(
+                                  color: user == _selectMemberPlaceholder
+                                      ? Colors.grey.shade600
+                                      : Colors.black,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedUser = value!;
+                            });
+                          },
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            meal,
-                            style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                    );
+                  },
+                ),
+
+              const SizedBox(height: 20),
+
+              /// Header Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Meals",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  IconButton(
+                    onPressed: _showAddMealDialog,
+                    icon: const Icon(Icons.add_circle, color: AppColor.primaryColor, size: 30),
+                    tooltip: "Add custom meal",
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
+              /// Meal List
+              Expanded(
+                child: ListView.separated(
+                  itemCount: _meals.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    String meal = _meals.keys.elementAt(index);
+                    double value = _meals[meal]!;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () => _changeMealCount(meal, -0.5),
-                          icon: const Icon(Icons.remove_circle, color: Colors.red, size: 28),
-                        ),
-                        Text(
-                          value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1),
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                        IconButton(
-                          onPressed: () => _changeMealCount(meal, 0.5),
-                          icon: const Icon(Icons.add_circle, color: Colors.green, size: 28),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              meal,
+                              style: const TextStyle(fontSize: 16, color: Colors.black),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => _changeMealCount(meal, -0.5),
+                            icon: const Icon(Icons.remove_circle, color: Colors.red, size: 28),
+                          ),
+                          Text(
+                            value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          ),
+                          IconButton(
+                            onPressed: () => _changeMealCount(meal, 0.5),
+                            icon: const Icon(Icons.add_circle, color: Colors.green, size: 28),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              /// Submit Button
+              BlocBuilder<AddMealCubit, AddMealState>(
+                builder: (context, state) {
+                  return CustomAppButton(
+                    onPressed: state.status == AddMealStatus.submitting ? null : _submitMeal,
+                    text: state.status == AddMealStatus.submitting ? "Submitting..." : "Add Meal",
+                    buttonColor: AppColor.primaryColor,
                   );
                 },
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            /// Submit Button
-            CustomAppButton(
-              onPressed: _submitMeal,
-              text: "Add Meal",
-              buttonColor: AppColor.primaryColor,
-            ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

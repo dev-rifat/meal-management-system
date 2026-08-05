@@ -1,28 +1,39 @@
-import 'package:mass_management/features/auth/auth.dart';
+import 'package:equatable/equatable.dart';
+import 'package:mass_management/features/auth/domain/entities/auth_user.dart';
 
+abstract class AuthState extends Equatable {
+  const AuthState();
 
-abstract class LoginState extends Equatable {}
-
-class LoginInitial extends LoginState {
   @override
   List<Object?> get props => [];
 }
 
-class LoginLoading extends LoginState {
-  @override
-  List<Object?> get props => [];
+class AuthInitial extends AuthState {
+  const AuthInitial();
 }
 
-class LoginSuccess extends LoginState {
-  final LoginResModel loginResModel;
-  LoginSuccess({required this.loginResModel});
-  @override
-  List<Object?> get props => [loginResModel];
+class AuthLoading extends AuthState {
+  const AuthLoading();
 }
 
-class LoginErrorMeg extends LoginState {
-final  String? errorMeg;
-  LoginErrorMeg({required this.errorMeg});
+class AuthAuthenticated extends AuthState {
+  final AuthUser user;
+
+  const AuthAuthenticated(this.user);
+
   @override
-  List<Object?> get props => [errorMeg];
+  List<Object?> get props => [user];
+}
+
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
+
+class AuthError extends AuthState {
+  final String message;
+
+  const AuthError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import '../../../utils/app_color.dart';
 
 class LoadingHelper {
@@ -8,7 +7,7 @@ class LoadingHelper {
     return Center(
       child: CupertinoActivityIndicator(
         animating: true,
-        radius: Checkbox.width * sizeFactor,
+        radius: 16 * sizeFactor,
         color: color ?? AppColor.primaryColor,
       ),
     );

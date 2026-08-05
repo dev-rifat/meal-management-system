@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:mass_management/core/utils/app_spacer.dart';
+import 'package:mass_management/core/routes/app_route.dart' show AppRoute;
 import 'package:mass_management/core/widgets/custom_app_button.dart'
     show CustomAppButton;
+import 'package:mass_management/core/widgets/success_message.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_layout.dart' show ResponsiveLayout;
-import 'package:mass_management/utils/app_style.dart' show AppStyle, normalText;
+import 'package:mass_management/utils/app_style.dart' show AppStyle;
 import 'package:mass_management/utils/dimensions.dart' show Dimensions;
 
 class SignupPage extends StatefulWidget {
@@ -43,57 +48,100 @@ class _SignupPageState extends State<SignupPage> {
   );
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+  void dispose() {
+    emailController.dispose();
+    usernameController.dispose();
+    phoneController.dispose();
+    dobController.dispose();
+    passwordController.dispose();
+    confrimpasswordController.dispose();
+    codeController.dispose();
+    messNameController.dispose();
+    messNumberController.dispose();
+    addressController.dispose();
+    emergencyNumberController.dispose();
+    cookInfoController.dispose();
+    super.dispose();
+  }
 
-      appBar: AppBar(
+  void _handleSubmit() {
+    if (isMessSignup) {
+      if (_createMessFormKey.currentState!.validate()) {
+        // Mess creation belongs to a separate (not-yet-migrated) feature —
+        // there's no domain/use case for it here, so just acknowledge the
+        // tap instead of pretending it succeeded.
+        showSuccessMessage(message: "Mess creation coming soon");
+      }
+    } else {
+      if (_formKey.currentState!.validate()) {
+        context.read<AuthBloc>().add(
+              SignUpRequested(
+                email: emailController.text.trim(),
+                username: usernameController.text.trim(),
+                password: passwordController.text,
+              ),
+            );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          context.go(AppRoute.dashboard);
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: Scaffold(
         backgroundColor: AppColor.backgroundColor,
 
-        title: Text(isMessSignup ? "Create Mess" : "Signup"),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildToggleButtons(),
-            const SizedBox(height: 20),
-            Form(
-              key: isMessSignup ? _createMessFormKey : _formKey,
-              child: isMessSignup ? _buildMessForm() : _buildUserForm(),
-            ),
-            const SizedBox(height: 20),
+        appBar: AppBar(
+          backgroundColor: AppColor.backgroundColor,
 
-            CustomAppButton(
-              text: isMessSignup ? "Create Mess" : "Sign Up",
-              widget: Text(
-                isMessSignup ? "Create Mess" : "Sign Up",
-                style: AppStyle.titleText.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColor.cardColor,
-                  fontSize: ResponsiveLayout.scaleText(Dimensions.fontSizeMid),
-                ),
+          title: Text(isMessSignup ? "Create Mess" : "Signup"),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _buildToggleButtons(),
+              const SizedBox(height: 20),
+              Form(
+                key: isMessSignup ? _createMessFormKey : _formKey,
+                child: isMessSignup ? _buildMessForm() : _buildUserForm(),
               ),
-              buttonRadius: Dimensions.radiusDefault,
-              buttonColor: AppColor.primaryColor,
-              onPressed: () {
-                if (isMessSignup) {
-                  if (_createMessFormKey.currentState!.validate()) {
-                    // Handle signup
-                  }
-                }else{
-                  if (_formKey.currentState!.validate()) {
-                    // Handle signup
-                  }
-                }
+              const SizedBox(height: 20),
 
-               
-                
-              },
-            ),
-            SizedBox(height: 200),
-          ],
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthLoading) {
+                    return const CircularProgressIndicator();
+                  }
+                  return CustomAppButton(
+                    text: isMessSignup ? "Create Mess" : "Sign Up",
+                    widget: Text(
+                      isMessSignup ? "Create Mess" : "Sign Up",
+                      style: AppStyle.titleText.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColor.cardColor,
+                        fontSize: Dimensions.fontSizeMid,
+                      ),
+                    ),
+                    buttonRadius: Dimensions.radiusDefault,
+                    buttonColor: AppColor.primaryColor,
+                    onPressed: _handleSubmit,
+                  );
+                },
+              ),
+              const SizedBox(height: 200),
+            ],
+          ),
         ),
       ),
     );
@@ -202,14 +250,14 @@ class _SignupPageState extends State<SignupPage> {
         _rawTitleText("Password", isRequired: true),
 
         _inputField(
-          "Confirm Password",
+          "Password",
           passwordController,
           icon: Icons.lock,
           obscureText: hidePassword,
           suffix: _togglePassword(),
           validator: (value) => _validateInput(value, "Password"),
         ),
-        _rawTitleText("Email", isRequired: true),
+        _rawTitleText("Confirm Password", isRequired: true),
 
         _inputField(
           "Confirm Password",
@@ -377,7 +425,7 @@ class _SignupPageState extends State<SignupPage> {
       child: Row(
         children: [
           Icon(Icons.help, color: AppColor.hintColor),
-          customSpacerWidth(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               s,

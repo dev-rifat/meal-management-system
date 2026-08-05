@@ -2,55 +2,53 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mass_management/core/widgets/app_input_field.dart' show CustomInputField, PasswordInputField;
 import 'package:mass_management/utils/dimensions.dart';
-import '../../../../../utils/app_color.dart';
-import '../../../../../utils/app_string.dart';
-import '../../../../../utils/app_style.dart';
+import '../../../../utils/app_color.dart';
+import '../../../../utils/app_string.dart';
+import '../../../../utils/app_style.dart';
 
-
-Widget userEmailField(controller, {Color? borderColor}) {
+Widget userEmailField(TextEditingController controller, {Color? borderColor}) {
   return CustomInputField(
-    hitText: AppString.text_enter_email_address,
+    hintText: AppString.textEnterEmailAddress,
     controller: controller,
     isHideLabelText: true,
     prefixIcon: Icon(
       Icons.email_outlined,
-      color: AppColor.hintColor.withOpacity(0.6),
+      color: AppColor.hintColor.withValues(alpha: 0.6),
     ),
-    borderColor:borderColor ?? Colors.transparent,
+    borderColor: borderColor ?? Colors.transparent,
     hintStyle: AppStyle.normalText.copyWith(
       color: AppColor.hintColor,
       fontSize: Dimensions.fontSizeDefault + 1,
     ),
     validator: (value) {
       if (value!.isEmpty) {
-        return AppString.the_email_field_is_required;
+        return AppString.theEmailFieldIsRequired;
       } else if (value.isEmpty || !RegExp(emailExp()).hasMatch(value)) {
-        return AppString.please_insert_a_valid_email_address;
+        return AppString.pleaseInsertAValidEmailAddress;
       } else {
         return null;
       }
     },
   );
 }
-emailExp() {
+
+String emailExp() {
   const pattern =
       r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$';
   return pattern;
 }
 
+final RegExp passwordRegex = RegExp(
+    r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&*!]).{2,}$');
 
-final passwordRegex = RegExp(
-    r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&*!]).{2,}$'
-);
-
-userNameField(controller) {
+Widget userNameField(TextEditingController controller) {
   return CustomInputField(
-    hitText: AppString.text_user_name,
+    hintText: AppString.textUserName,
     controller: controller,
     isHideLabelText: true,
     prefixIcon: Icon(
       CupertinoIcons.person_alt_circle,
-      color: AppColor.hintColor.withOpacity(0.6),
+      color: AppColor.hintColor.withValues(alpha: 0.6),
     ),
     borderColor: Colors.transparent,
     hintStyle: AppStyle.normalText.copyWith(
@@ -59,7 +57,7 @@ userNameField(controller) {
     ),
     validator: (value) {
       if (value!.isEmpty) {
-        return AppString.the_first_name_field_is_required;
+        return AppString.theUserNameFieldIsRequired;
       } else {
         return null;
       }
@@ -67,16 +65,15 @@ userNameField(controller) {
   );
 }
 
-userPhoneNumberField(controller) {
+Widget userPhoneNumberField(TextEditingController controller) {
   return CustomInputField(
-    hitText: AppString.text_enter_phone_number,
+    hintText: AppString.textEnterPhoneNumber,
     controller: controller,
     errorBorderColor: Colors.transparent,
     isHideLabelText: true,
-
     prefixIcon: Icon(
       CupertinoIcons.phone_circle,
-      color: AppColor.hintColor.withOpacity(0.6),
+      color: AppColor.hintColor.withValues(alpha: 0.6),
     ),
     borderColor: Colors.transparent,
     textInputType: TextInputType.number,
@@ -84,12 +81,10 @@ userPhoneNumberField(controller) {
       color: AppColor.hintColor,
       fontSize: Dimensions.fontSizeDefault + 1,
     ),
-
-
   );
 }
 
-userPasswordField({String? hintText, required TextEditingController controller}) {
+Widget userPasswordField({String? hintText, required TextEditingController controller}) {
   return PasswordInputField(
     controller: controller,
     borderColor: Colors.transparent,
@@ -97,29 +92,25 @@ userPasswordField({String? hintText, required TextEditingController controller})
       color: AppColor.hintColor,
       fontSize: Dimensions.fontSizeDefault + 1,
     ),
-    hitText: hintText ?? "Enter password",
+    hintText: hintText ?? "Enter password",
     validator: (value) {
       if (value == null || value.isEmpty) {
-        return AppString.the_password_field_is_required;
+        return AppString.thePasswordFieldIsRequired;
       } else if (!passwordRegex.hasMatch(value)) {
         return "Weak password. Use A-Z, a-z, 0-9 & symbol.";
-      }
-      else if(value.length<8){
-
+      } else if (value.length < 8) {
         return "Password must be at least 8 characters";
-
       }
       return null;
     },
     prefixIcon: Icon(
       Icons.lock_open_outlined,
-      color: AppColor.hintColor.withOpacity(0.6),
+      color: AppColor.hintColor.withValues(alpha: 0.6),
     ),
   );
 }
 
-userConfirmPasswordField({String? hintText, required TextEditingController pasController}) {
-
+Widget userConfirmPasswordField({String? hintText, required TextEditingController pasController}) {
   return PasswordInputField(
     controller: pasController,
     borderColor: Colors.transparent,
@@ -127,13 +118,13 @@ userConfirmPasswordField({String? hintText, required TextEditingController pasCo
       color: AppColor.hintColor,
       fontSize: Dimensions.fontSizeDefault + 1,
     ),
-    hitText: hintText ?? "Enter confirm password",
+    hintText: hintText ?? "Enter confirm password",
     validator: (value) {
       final password = pasController.text.trim();
       final confirmPassword = value?.trim() ?? '';
 
       if (confirmPassword.isEmpty) {
-        return AppString.the__confirm_password_field_is_required;
+        return AppString.theConfirmPasswordFieldIsRequired;
       } else if (password != confirmPassword) {
         return "Passwords do not match";
       }
@@ -141,7 +132,7 @@ userConfirmPasswordField({String? hintText, required TextEditingController pasCo
     },
     prefixIcon: Icon(
       Icons.lock_open_outlined,
-      color: AppColor.hintColor.withOpacity(0.6),
+      color: AppColor.hintColor.withValues(alpha: 0.6),
     ),
   );
 }

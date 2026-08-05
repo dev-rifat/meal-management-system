@@ -1,13 +1,41 @@
-import 'package:mass_management/features/auth/auth.dart';
+import 'package:equatable/equatable.dart';
 
-
-abstract class LoginEventState extends Equatable {}
-
-class LoginReqEvent extends LoginEventState {
-  final LoginReqModel rqModel;
-  LoginReqEvent({required this.rqModel});
-
+abstract class AuthEvent extends Equatable {
+  const AuthEvent();
 
   @override
-  List<Object?> get props => [rqModel];
+  List<Object?> get props => [];
+}
+
+class LoginRequested extends AuthEvent {
+  final String email;
+  final String password;
+
+  const LoginRequested({required this.email, required this.password});
+
+  @override
+  List<Object?> get props => [email, password];
+}
+
+class SignUpRequested extends AuthEvent {
+  final String email;
+  final String username;
+  final String password;
+
+  const SignUpRequested({
+    required this.email,
+    required this.username,
+    required this.password,
+  });
+
+  @override
+  List<Object?> get props => [email, username, password];
+}
+
+class LogoutRequested extends AuthEvent {
+  const LogoutRequested();
+}
+
+class CheckSessionRequested extends AuthEvent {
+  const CheckSessionRequested();
 }

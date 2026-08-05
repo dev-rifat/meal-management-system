@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app_layout.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dimensions.dart';
 import 'app_color.dart';
 
@@ -7,28 +7,28 @@ class AppStyle {
   AppStyle._();
 
   static TextStyle titleText = TextStyle(
-    fontSize: AppLayout.getWidth(Dimensions.fontSizeDefault),
+    fontSize: Dimensions.fontSizeDefault.sp,
     fontWeight: FontWeight.bold,
     color: AppColor.normalTextColor,
     fontFamily: 'Montserrat',
   );
 
   static TextStyle smallText = TextStyle(
-    fontSize: AppLayout.getWidth(Dimensions.fontSizeSmall),
+    fontSize: Dimensions.fontSizeSmall.sp,
     fontWeight: FontWeight.w400,
     color: AppColor.normalTextColor,
     fontFamily: 'Montserrat',
   );
 
   static TextStyle normalText = TextStyle(
-    fontSize: AppLayout.getWidth(Dimensions.fontSizeDefault),
+    fontSize: Dimensions.fontSizeDefault.sp,
     fontWeight: FontWeight.w500,
     color: AppColor.normalTextColor,
     fontFamily: 'Montserrat',
   );
 
   static TextStyle largeTextWhite = TextStyle(
-    fontSize: AppLayout.getWidth(Dimensions.fontSizeExtraDefault),
+    fontSize: Dimensions.fontSizeExtraDefault.sp,
     fontWeight: FontWeight.w600,
     color: AppColor.normalTextColor,
     fontFamily: 'Montserrat',
