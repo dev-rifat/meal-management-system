@@ -10,10 +10,11 @@ ThemeData _themeData = ThemeData(
   fontFamily: "Montserrat",
   appBarTheme: const AppBarTheme(
     iconTheme: IconThemeData(color: Colors.black),
-     foregroundColor: Colors.black,
+    foregroundColor: Colors.black,
     systemOverlayStyle: SystemUiOverlayStyle(
-    //statusBarColor: Colors.black12,
-    ),),
+      //statusBarColor: Colors.black12,
+    ),
+  ),
 
   // scaffoldBG, applicable for aLL PAGES
   scaffoldBackgroundColor: AppColor.backgroundColor,
@@ -21,7 +22,4 @@ ThemeData _themeData = ThemeData(
   colorScheme: ColorScheme.fromSwatch().copyWith(
     primary: AppColor.primaryColor,
   ),
-
-
-
 );

@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/core/widgets/custom_onloading.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mass_management/features/dashboard/domain/entities/meal_record.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/meal_list_cubit.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/meal_list_state.dart';
-import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_style.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/app_style.dart';
 
 class MealDetailsPage extends StatelessWidget {
   const MealDetailsPage({super.key});
@@ -49,6 +52,14 @@ class _MealDetailsView extends StatelessWidget {
     final double fontSizeValue = isSmallScreen ? 14 : 16;
     final double iconSize = isSmallScreen ? 22 : 18;
 
+    // Meals stay visible to everyone; only the approve/reject moderation
+    // control is manager-only. This is a standalone route (not nav-shell
+    // injected), so it reads role straight from AuthBloc itself.
+    final authState = context.watch<AuthBloc>().state;
+    final canModerate =
+        authState is AuthAuthenticated &&
+        authState.user.role == UserRole.manager;
+
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       appBar: CustomAppBar(
@@ -58,16 +69,35 @@ class _MealDetailsView extends StatelessWidget {
         actions: [
           /// ✅ Date Dropdown Filter
           BlocBuilder<MealListCubit, MealListState>(
+            // Only depends on `monthFilter`. Every filter change round-trips
+            // through a transient MealListLoading (which carries no filter
+            // value) before the next MealListLoaded — skip that transient so
+            // the dropdown doesn't flicker back to a default value mid-fetch.
+            buildWhen: (previous, current) {
+              if (current is! MealListLoaded) return false;
+              if (previous is! MealListLoaded) return true;
+              return previous.monthFilter != current.monthFilter;
+            },
             builder: (context, state) {
-              final monthFilter = state is MealListLoaded ? state.monthFilter : MonthFilter.thisMonth;
+              final monthFilter = state is MealListLoaded
+                  ? state.monthFilter
+                  : MonthFilter.thisMonth;
               return Container(
                 color: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: DropdownButton<MonthFilter>(
                   value: monthFilter,
                   underline: const SizedBox(),
                   items: _monthFilters
-                      .map((entry) => DropdownMenuItem(value: entry.value, child: Text(entry.key)))
+                      .map(
+                        (entry) => DropdownMenuItem(
+                          value: entry.value,
+                          child: Text(entry.key),
+                        ),
+                      )
                       .toList(),
                   onChanged: (value) async {
                     if (value == null) return;
@@ -98,8 +128,18 @@ class _MealDetailsView extends StatelessWidget {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: BlocBuilder<MealListCubit, MealListState>(
+                // Only depends on `statusFilter`; skip the transient
+                // MealListLoading emitted on every filter change so the
+                // chip row doesn't flicker back to "All" mid-fetch.
+                buildWhen: (previous, current) {
+                  if (current is! MealListLoaded) return false;
+                  if (previous is! MealListLoaded) return true;
+                  return previous.statusFilter != current.statusFilter;
+                },
                 builder: (context, state) {
-                  final selected = state is MealListLoaded ? state.statusFilter : null;
+                  final selected = state is MealListLoaded
+                      ? state.statusFilter
+                      : null;
                   return Row(
                     children: _statusFilters.map((status) {
                       final label = _statusLabel(status);
@@ -110,10 +150,14 @@ class _MealDetailsView extends StatelessWidget {
                           showCheckmark: false,
                           elevation: 0,
                           side: BorderSide.none,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                           label: Text(label),
                           selected: isSelected,
-                          onSelected: (_) => context.read<MealListCubit>().changeStatusFilter(status),
+                          onSelected: (_) => context
+                              .read<MealListCubit>()
+                              .changeStatusFilter(status),
                           selectedColor: AppColor.primaryColor,
                           backgroundColor: Colors.grey.shade200,
                           labelStyle: TextStyle(
@@ -142,7 +186,10 @@ class _MealDetailsView extends StatelessWidget {
                 final meals = state.meals;
                 return ListView.builder(
                   itemCount: meals.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0,
+                    vertical: 8,
+                  ),
                   itemBuilder: (context, index) {
                     final meal = meals[index];
                     return MealCard(
@@ -156,8 +203,12 @@ class _MealDetailsView extends StatelessWidget {
                       dinner: meal.dinner,
                       total: meal.total,
                       status: meal.status,
+                      canModerate: canModerate,
                       onStatusChange: (newStatus) {
-                        context.read<MealListCubit>().updateStatus(meal.id, newStatus);
+                        context.read<MealListCubit>().updateStatus(
+                          meal.id,
+                          newStatus,
+                        );
                       },
                     );
                   },
@@ -188,6 +239,7 @@ class MealCard extends StatelessWidget {
   final double iconSize, fontSizeTitle, fontSizeValue;
   final double breakfast, lunch, dinner, total;
   final MealStatus status;
+  final bool canModerate;
   final ValueChanged<MealStatus> onStatusChange;
 
   const MealCard({
@@ -202,6 +254,7 @@ class MealCard extends StatelessWidget {
     required this.dinner,
     required this.total,
     required this.status,
+    required this.canModerate,
     required this.onStatusChange,
   });
 
@@ -253,7 +306,11 @@ class MealCard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.calendar_today, color: Colors.black54, size: 16),
+                            const Icon(
+                              Icons.calendar_today,
+                              color: Colors.black54,
+                              size: 16,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               DateFormat('EEE, MMM dd, yyyy').format(date),
@@ -264,17 +321,28 @@ class MealCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        (status == MealStatus.pending)
+                        (status == MealStatus.pending && canModerate)
                             ? PopupMenuButton<MealStatus>(
                                 onSelected: onStatusChange,
                                 itemBuilder: (context) => [
-                                  const PopupMenuItem(value: MealStatus.approved, child: Text("Approve")),
-                                  const PopupMenuItem(value: MealStatus.rejected, child: Text("Reject")),
+                                  const PopupMenuItem(
+                                    value: MealStatus.approved,
+                                    child: Text("Approve"),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: MealStatus.rejected,
+                                    child: Text("Reject"),
+                                  ),
                                 ],
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: _getStatusColor(status).withValues(alpha: 0.1),
+                                    color: _getStatusColor(
+                                      status,
+                                    ).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Row(
@@ -287,15 +355,23 @@ class MealCard extends StatelessWidget {
                                           fontSize: fontSizeTitle,
                                         ),
                                       ),
-                                      const Icon(Icons.arrow_drop_down, size: 20),
+                                      const Icon(
+                                        Icons.arrow_drop_down,
+                                        size: 20,
+                                      ),
                                     ],
                                   ),
                                 ),
                               )
                             : Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(status).withValues(alpha: 0.1),
+                                  color: _getStatusColor(
+                                    status,
+                                  ).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -313,10 +389,38 @@ class MealCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        MealItem("Breakfast", breakfast, Icons.free_breakfast, iconSize, fontSizeTitle, fontSizeValue),
-                        MealItem("Lunch", lunch, Icons.lunch_dining, iconSize, fontSizeTitle, fontSizeValue),
-                        MealItem("Dinner", dinner, Icons.dinner_dining, iconSize, fontSizeTitle, fontSizeValue),
-                        MealItem("Total", total, Icons.summarize, iconSize, fontSizeTitle, fontSizeValue),
+                        MealItem(
+                          "Breakfast",
+                          breakfast,
+                          Icons.free_breakfast,
+                          iconSize,
+                          fontSizeTitle,
+                          fontSizeValue,
+                        ),
+                        MealItem(
+                          "Lunch",
+                          lunch,
+                          Icons.lunch_dining,
+                          iconSize,
+                          fontSizeTitle,
+                          fontSizeValue,
+                        ),
+                        MealItem(
+                          "Dinner",
+                          dinner,
+                          Icons.dinner_dining,
+                          iconSize,
+                          fontSizeTitle,
+                          fontSizeValue,
+                        ),
+                        MealItem(
+                          "Total",
+                          total,
+                          Icons.summarize,
+                          iconSize,
+                          fontSizeTitle,
+                          fontSizeValue,
+                        ),
                       ],
                     ),
                   ],
@@ -336,7 +440,15 @@ class MealItem extends StatelessWidget {
   final IconData icon;
   final double iconSize, titleSize, valueSize;
 
-  const MealItem(this.title, this.value, this.icon, this.iconSize, this.titleSize, this.valueSize, {super.key});
+  const MealItem(
+    this.title,
+    this.value,
+    this.icon,
+    this.iconSize,
+    this.titleSize,
+    this.valueSize, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

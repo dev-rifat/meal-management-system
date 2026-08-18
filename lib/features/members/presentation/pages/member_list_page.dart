@@ -1,18 +1,24 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:mass_management/core/widgets/confirm_dialog.dart' show showConfirmDialog;
-import 'package:mass_management/core/widgets/custom_app_bar.dart' show CustomAppBar;
+import 'package:mass_management/core/enums/user_role.dart';
+import 'package:mass_management/core/widgets/confirm_dialog.dart'
+    show showConfirmDialog;
+import 'package:mass_management/core/widgets/custom_app_bar.dart'
+    show CustomAppBar;
 import 'package:mass_management/features/members/domain/entities/member.dart';
 import 'package:mass_management/features/members/presentation/cubit/members_cubit.dart';
 import 'package:mass_management/features/members/presentation/cubit/members_state.dart';
-import 'package:mass_management/utils/app_color.dart' show AppColor;
+import 'package:mass_management/core/theme/app_color.dart' show AppColor;
 
 /// Expects a [MembersCubit] to already be provided above it in the widget
 /// tree (e.g. via `BlocProvider(create: (_) => sl<MembersCubit>())`) — this
 /// page does not reach into a service locator itself.
 class MemberListPage extends StatefulWidget {
-  const MemberListPage({super.key});
+  final UserRole viewerRole;
+
+  const MemberListPage({super.key, required this.viewerRole});
 
   @override
   State<MemberListPage> createState() => _MemberListPageState();
@@ -81,7 +87,9 @@ class _MemberListPageState extends State<MemberListPage> {
                         setDialogState(() => paymentStatus = value);
                       }
                     },
-                    decoration: const InputDecoration(labelText: "Payment Status"),
+                    decoration: const InputDecoration(
+                      labelText: "Payment Status",
+                    ),
                   ),
                 ],
               ),
@@ -122,8 +130,8 @@ class _MemberListPageState extends State<MemberListPage> {
       backgroundColor: AppColor.backgroundColor,
       appBar: CustomAppBar(
         leadingWidth: 300,
-        leading: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        leading: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.0),
           child: Text(
             "Member List",
             style: TextStyle(
@@ -143,7 +151,7 @@ class _MemberListPageState extends State<MemberListPage> {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search users...",
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
@@ -157,13 +165,16 @@ class _MemberListPageState extends State<MemberListPage> {
               child: BlocBuilder<MembersCubit, MembersState>(
                 builder: (context, state) {
                   return switch (state) {
-                    MembersLoading() => const Center(child: CircularProgressIndicator()),
+                    MembersLoading() => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
                     MembersError() => Center(child: Text(state.message)),
                     MembersLoaded() => _MemberListView(
-                        members: state.members,
-                        onDelete: _handleDelete,
-                        onUpdate: _handleUpdate,
-                      ),
+                      members: state.members,
+                      canModify: widget.viewerRole == UserRole.manager,
+                      onDelete: _handleDelete,
+                      onUpdate: _handleUpdate,
+                    ),
                   };
                 },
               ),
@@ -177,11 +188,13 @@ class _MemberListPageState extends State<MemberListPage> {
 
 class _MemberListView extends StatelessWidget {
   final List<Member> members;
+  final bool canModify;
   final void Function(Member member) onDelete;
   final void Function(Member member) onUpdate;
 
   const _MemberListView({
     required this.members,
+    required this.canModify,
     required this.onDelete,
     required this.onUpdate,
   });
@@ -202,9 +215,12 @@ class _MemberListView extends StatelessWidget {
           child: ListTile(
             leading: CircleAvatar(
               radius: 25,
-              backgroundImage: NetworkImage(member.profileImage),
+              backgroundImage: CachedNetworkImageProvider(member.profileImage),
             ),
-            title: Text(member.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              member.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -228,22 +244,24 @@ class _MemberListView extends StatelessWidget {
               ],
             ),
             isThreeLine: true,
-            trailing: PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == "delete") onDelete(member);
-                if (value == "update") onUpdate(member);
-              },
-              itemBuilder: (_) => [
-                const PopupMenuItem(
-                  value: "update",
-                  child: Text("Update"),
-                ),
-                const PopupMenuItem(
-                  value: "delete",
-                  child: Text("Delete"),
-                ),
-              ],
-            ),
+            trailing: canModify
+                ? PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == "delete") onDelete(member);
+                      if (value == "update") onUpdate(member);
+                    },
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(
+                        value: "update",
+                        child: Text("Update"),
+                      ),
+                      const PopupMenuItem(
+                        value: "delete",
+                        child: Text("Delete"),
+                      ),
+                    ],
+                  )
+                : null,
           ),
         );
       },

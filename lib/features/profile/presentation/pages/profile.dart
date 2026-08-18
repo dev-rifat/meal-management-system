@@ -7,11 +7,13 @@ import 'package:intl/intl.dart';
 import 'package:mass_management/core/routes/app_route.dart';
 import 'package:mass_management/core/widgets/confirm_dialog.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mass_management/features/profile/domain/entities/profile.dart';
 import 'package:mass_management/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:mass_management/features/profile/presentation/cubit/profile_state.dart';
-import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_style.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/app_style.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -35,9 +37,9 @@ class _ProfileView extends StatelessWidget {
         if (state is ProfileLoggedOut) {
           context.go(AppRoute.login);
         } else if (state is ProfileError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       builder: (context, state) {
@@ -45,10 +47,19 @@ class _ProfileView extends StatelessWidget {
           backgroundColor: AppColor.backgroundColor,
           appBar: _buildAppBar(),
           body: switch (state) {
-            ProfileLoading() => const Center(child: CircularProgressIndicator()),
-            ProfileLoggedOut() => const Center(child: CircularProgressIndicator()),
-            ProfileError(message: final message) => Center(child: Text(message)),
-            ProfileLoaded(profile: final profile) => _buildContent(context, profile),
+            ProfileLoading() => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            ProfileLoggedOut() => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            ProfileError(message: final message) => Center(
+              child: Text(message),
+            ),
+            ProfileLoaded(profile: final profile) => _buildContent(
+              context,
+              profile,
+            ),
           },
         );
       },
@@ -63,7 +74,11 @@ class _ProfileView extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 14.0),
         child: Text(
           "Profile",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 20),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
         ),
       ),
       backgroundColor: AppColor.backgroundColor,
@@ -87,8 +102,16 @@ class _ProfileView extends StatelessWidget {
           const SizedBox(height: 24),
           _sectionTitle("Others"),
           _infoCard([
-            _infoRow(Icons.contact_phone, "Emergency Contact", profile.emergencyContact),
-            _infoRow(Icons.cake, "Birthday", DateFormat('dd MMM, yyyy').format(profile.birthday)),
+            _infoRow(
+              Icons.contact_phone,
+              "Emergency Contact",
+              profile.emergencyContact,
+            ),
+            _infoRow(
+              Icons.cake,
+              "Birthday",
+              DateFormat('dd MMM, yyyy').format(profile.birthday),
+            ),
           ]),
           const SizedBox(height: 24),
           _logoutButton(context),
@@ -110,9 +133,18 @@ class _ProfileView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(profile.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(
+                profile.name,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(profile.phoneNumber, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+              Text(
+                profile.phoneNumber,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
             ],
           ),
         ),
@@ -136,9 +168,7 @@ class _ProfileView extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: _addDividers(children),
-        ),
+        child: Column(children: _addDividers(children)),
       ),
     );
   }
@@ -180,7 +210,10 @@ class _ProfileView extends StatelessWidget {
           children: [
             Icon(Icons.logout, color: Colors.red, size: 22),
             SizedBox(width: 8),
-            Text("Logout", style: TextStyle(fontSize: 16, color: Colors.black87)),
+            Text(
+              "Logout",
+              style: TextStyle(fontSize: 16, color: Colors.black87),
+            ),
           ],
         ),
       ),
@@ -198,6 +231,11 @@ class _ProfileView extends StatelessWidget {
     );
     if (confirmed) {
       await cubit.logout();
+      // Keep AuthBloc (the router guard's source of truth) in sync — it's
+      // otherwise unaware this logout happened at all.
+      if (context.mounted) {
+        context.read<AuthBloc>().add(const LogoutRequested());
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
-import 'package:dropdown_button2/dropdown_button2.dart' show DropdownButtonFormField2;
+import 'package:dropdown_button2/dropdown_button2.dart'
+    show DropdownButtonFormField2;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mass_management/core/widgets/app_input_field.dart';
@@ -7,7 +8,7 @@ import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/core/widgets/success_message.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_expense_cubit.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_expense_state.dart';
-import 'package:mass_management/utils/app_color.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
@@ -70,7 +71,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             Navigator.pop(context);
           } else if (state.status == AddExpenseStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage ?? "Something went wrong")),
+              SnackBar(
+                content: Text(state.errorMessage ?? "Something went wrong"),
+              ),
             );
           }
         },
@@ -120,10 +123,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               ),
               const SizedBox(height: 50),
               BlocBuilder<AddExpenseCubit, AddExpenseState>(
+                buildWhen: (previous, current) =>
+                    previous.status != current.status,
                 builder: (context, state) {
                   return CustomAppButton(
-                    onPressed:
-                        state.status == AddExpenseStatus.submitting ? null : _submitExpense,
+                    onPressed: state.status == AddExpenseStatus.submitting
+                        ? null
+                        : _submitExpense,
                     buttonColor: AppColor.primaryColor,
                     text: state.status == AddExpenseStatus.submitting
                         ? "Submitting..."
@@ -138,39 +144,44 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-  _appBar() => CustomAppBar(
-        title: "Add Expense",
-        backgroundColor: Colors.white,
-      );
+  _appBar() =>
+      CustomAppBar(title: "Add Expense", backgroundColor: Colors.white);
 
   Widget _title(String text) => Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-      );
+    text,
+    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+  );
 
   InputDecoration _inputDecoration(String hint) => InputDecoration(
-        hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-        enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: Colors.black)),
-        focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: Colors.black)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      );
+    hintText: hint,
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
+      borderSide: BorderSide(color: Colors.black),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
+      borderSide: BorderSide(color: Colors.black),
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+  );
 
   Widget _spentDropDown() {
     return BlocBuilder<AddExpenseCubit, AddExpenseState>(
+      buildWhen: (previous, current) => previous.members != current.members,
       builder: (context, state) {
         return DropdownButtonFormField2(
           value: _selectedMember,
           decoration: InputDecoration(
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
             enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: const BorderSide(color: Colors.black)),
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Colors.black),
+            ),
             focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: const BorderSide(color: Colors.black)),
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Colors.black),
+            ),
           ),
           hint: const Align(
             alignment: Alignment.centerLeft,
@@ -182,7 +193,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           alignment: Alignment.center,
           isExpanded: true,
           items: state.members
-              .map((member) => DropdownMenuItem(value: member, child: Text(member)))
+              .map(
+                (member) =>
+                    DropdownMenuItem(value: member, child: Text(member)),
+              )
               .toList(),
           onChanged: (val) {
             setState(() {
@@ -196,19 +210,23 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   void _submitExpense() {
     final amount = double.tryParse(_priceController.text.trim());
-    if (_titleController.text.trim().isEmpty || amount == null || _selectedMember == null) {
+    if (_titleController.text.trim().isEmpty ||
+        amount == null ||
+        _selectedMember == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in title, price and spent by.")),
+        const SnackBar(
+          content: Text("Please fill in title, price and spent by."),
+        ),
       );
       return;
     }
 
     context.read<AddExpenseCubit>().submit(
-          title: _titleController.text.trim(),
-          amount: amount,
-          date: _selectedDate,
-          details: _detailsController.text.trim(),
-          spentBy: _selectedMember!,
-        );
+      title: _titleController.text.trim(),
+      amount: amount,
+      date: _selectedDate,
+      details: _detailsController.text.trim(),
+      spentBy: _selectedMember!,
+    );
   }
 }

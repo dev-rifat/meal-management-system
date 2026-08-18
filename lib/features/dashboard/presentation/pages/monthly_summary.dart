@@ -8,8 +8,8 @@ import 'package:mass_management/core/widgets/custom_onloading.dart';
 import 'package:mass_management/features/dashboard/domain/entities/monthly_summary_entry.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/monthly_summary_cubit.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/monthly_summary_state.dart';
-import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_style.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/app_style.dart';
 
 class MonthlySummary extends StatelessWidget {
   const MonthlySummary({super.key});
@@ -61,8 +61,13 @@ class _MonthlySummaryView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (state.filter == "Custom" && state.range != null) _buildSelectedRange(state.range!),
-                _buildSummaryCard(state.summary.totalCost, state.summary.totalMeal, mealRate),
+                if (state.filter == "Custom" && state.range != null)
+                  _buildSelectedRange(state.range!),
+                _buildSummaryCard(
+                  state.summary.totalCost,
+                  state.summary.totalMeal,
+                  mealRate,
+                ),
                 const SizedBox(height: 20),
                 const Text(
                   "Mess Members",
@@ -81,8 +86,18 @@ class _MonthlySummaryView extends StatelessWidget {
   // 🔹 Filter Dropdown
   Widget _buildFilterDropdown(BuildContext context) {
     return BlocBuilder<MonthlySummaryCubit, MonthlySummaryState>(
+      // Only depends on `filter`; skip the transient MonthlySummaryLoading
+      // emitted on every filter/search change so the dropdown doesn't
+      // flicker back to "This Month" mid-fetch.
+      buildWhen: (previous, current) {
+        if (current is! MonthlySummaryLoaded) return false;
+        if (previous is! MonthlySummaryLoaded) return true;
+        return previous.filter != current.filter;
+      },
       builder: (context, state) {
-        final filter = state is MonthlySummaryLoaded ? state.filter : "This Month";
+        final filter = state is MonthlySummaryLoaded
+            ? state.filter
+            : "This Month";
         return Container(
           color: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -111,7 +126,10 @@ class _MonthlySummaryView extends StatelessWidget {
   }
 
   // 🔹 Month range picker
-  Future<void> _pickMonthRange(BuildContext context, MonthlySummaryCubit cubit) async {
+  Future<void> _pickMonthRange(
+    BuildContext context,
+    MonthlySummaryCubit cubit,
+  ) async {
     final start = await showMonthPicker(
       context: context,
       initialDate: DateTime.now(),
@@ -129,7 +147,10 @@ class _MonthlySummaryView extends StatelessWidget {
     );
     if (end == null) return;
 
-    cubit.changeFilter("Custom", range: DateTimeRange(start: start, end: end));
+    cubit.changeFilter(
+      "Custom",
+      range: DateTimeRange(start: start, end: end),
+    );
   }
 
   // 🔹 Selected Month Range Display
@@ -154,7 +175,11 @@ class _MonthlySummaryView extends StatelessWidget {
   }
 
   // 🔹 Summary Card
-  Widget _buildSummaryCard(double totalCost, double totalMeal, double mealRate) {
+  Widget _buildSummaryCard(
+    double totalCost,
+    double totalMeal,
+    double mealRate,
+  ) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       elevation: 0,
@@ -180,12 +205,18 @@ class _MonthlySummaryView extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppStyle.normalText.copyWith(color: AppColor.alertBgColor, fontSize: 12),
+          style: AppStyle.normalText.copyWith(
+            color: AppColor.alertBgColor,
+            fontSize: 12,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: AppStyle.normalText.copyWith(color: AppColor.cardColor, fontSize: 16),
+          style: AppStyle.normalText.copyWith(
+            color: AppColor.cardColor,
+            fontSize: 16,
+          ),
         ),
       ],
     );
@@ -225,7 +256,11 @@ class _MonthlySummaryView extends StatelessWidget {
   }
 
   // 🔹 Individual Member Card
-  Widget _buildMemberCard(MonthlySummaryEntry member, double mealCost, double due) {
+  Widget _buildMemberCard(
+    MonthlySummaryEntry member,
+    double mealCost,
+    double due,
+  ) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       elevation: 0,

@@ -7,8 +7,8 @@ import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/core/widgets/success_message.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_share_expense_cubit.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_share_expense_state.dart';
-import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_style.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/app_style.dart';
 
 class AddShareExpenseScreen extends StatefulWidget {
   const AddShareExpenseScreen({super.key});
@@ -93,11 +93,17 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
               }
               Navigator.pop(dialogContext);
             },
-            child: Text("Add", style: AppStyle.normalText.copyWith(color: AppColor.cardColor)),
+            child: Text(
+              "Add",
+              style: AppStyle.normalText.copyWith(color: AppColor.cardColor),
+            ),
           ),
         ],
       ),
-    );
+      // The controller is scoped to this dialog only; dispose it once the
+      // dialog is dismissed to avoid leaking a TextEditingController every
+      // time "Add Custom Bill Type" is opened.
+    ).then((_) => controller.dispose());
   }
 
   @override
@@ -115,7 +121,9 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
             Navigator.pop(context);
           } else if (state.status == AddShareExpenseStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage ?? "Something went wrong")),
+              SnackBar(
+                content: Text(state.errorMessage ?? "Something went wrong"),
+              ),
             );
           }
         },
@@ -140,12 +148,19 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
               _sectionTitle("Spent By"),
               const SizedBox(height: 10),
               BlocBuilder<AddShareExpenseCubit, AddShareExpenseState>(
+                buildWhen: (previous, current) =>
+                    previous.members != current.members,
                 builder: (context, state) {
                   return _buildDropdown<String>(
                     value: _selectedMember,
                     hint: "Select Member",
                     items: state.members
-                        .map((member) => DropdownMenuItem(value: member, child: Text(member)))
+                        .map(
+                          (member) => DropdownMenuItem(
+                            value: member,
+                            child: Text(member),
+                          ),
+                        )
                         .toList(),
                     onChanged: (val) => setState(() => _selectedMember = val),
                   );
@@ -163,12 +178,17 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
               _sectionTitle("Bill Type"),
               const SizedBox(height: 10),
               BlocBuilder<AddShareExpenseCubit, AddShareExpenseState>(
+                buildWhen: (previous, current) =>
+                    previous.billTypes != current.billTypes,
                 builder: (context, state) {
                   return _buildDropdown<String>(
                     value: _selectedBillType,
                     hint: "Select Bill Type",
                     items: state.billTypes
-                        .map((bill) => DropdownMenuItem(value: bill, child: Text(bill)))
+                        .map(
+                          (bill) =>
+                              DropdownMenuItem(value: bill, child: Text(bill)),
+                        )
                         .toList(),
                     onChanged: (val) => setState(() => _selectedBillType = val),
                   );
@@ -179,7 +199,10 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   onPressed: _addCustomBillType,
-                  icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
+                  icon: const Icon(
+                    Icons.add_circle_outline,
+                    color: Colors.blue,
+                  ),
                   label: const Text(
                     "Add Custom Bill Type",
                     style: TextStyle(color: Colors.blue),
@@ -196,6 +219,8 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
               ),
               const SizedBox(height: 40),
               BlocBuilder<AddShareExpenseCubit, AddShareExpenseState>(
+                buildWhen: (previous, current) =>
+                    previous.status != current.status,
                 builder: (context, state) {
                   return CustomAppButton(
                     onPressed: state.status == AddShareExpenseStatus.submitting
@@ -216,12 +241,9 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
   }
 
   Widget _sectionTitle(String text) => Text(
-        text,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-      );
+    text,
+    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+  );
 
   Widget _buildDropdown<T>({
     required T? value,
@@ -246,12 +268,14 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String hint, [double? horizontal = 0]) => InputDecoration(
+  InputDecoration _inputDecoration(String hint, [double? horizontal = 0]) =>
+      InputDecoration(
         hintText: hint,
-        contentPadding: EdgeInsets.symmetric(horizontal: horizontal ?? 0, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: horizontal ?? 0,
+          vertical: 12,
         ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6),
           borderSide: const BorderSide(color: Colors.black54),
@@ -264,9 +288,13 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
 
   void _submitExpense() {
     final amount = double.tryParse(_priceController.text.trim());
-    if (amount == null || _selectedMember == null || _selectedBillType == null) {
+    if (amount == null ||
+        _selectedMember == null ||
+        _selectedBillType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in price, spent by and bill type.")),
+        const SnackBar(
+          content: Text("Please fill in price, spent by and bill type."),
+        ),
       );
       return;
     }
@@ -274,12 +302,12 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
     // No dedicated title field for shared expenses — derive a reasonable
     // display title from the bill type instead (e.g. "WiFi Bill").
     context.read<AddShareExpenseCubit>().submit(
-          title: "$_selectedBillType Bill",
-          amount: amount,
-          date: _selectedDate,
-          details: _detailsController.text.trim(),
-          spentBy: _selectedMember!,
-          billType: _selectedBillType!,
-        );
+      title: "$_selectedBillType Bill",
+      amount: amount,
+      date: _selectedDate,
+      details: _detailsController.text.trim(),
+      spentBy: _selectedMember!,
+      billType: _selectedBillType!,
+    );
   }
 }

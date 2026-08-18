@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mass_management/utils/app_color.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
 /// Shared yes/no confirmation dialog — replaces the ad-hoc `AlertDialog`s
 /// that used to be duplicated per screen (delete/update/logout confirmations).
@@ -25,7 +25,11 @@ Future<bool> showConfirmDialog(
           onPressed: () => Navigator.pop(context, true),
           child: Text(
             confirmLabel,
-            style: TextStyle(color: isDestructive ? AppColor.errorColor : AppColor.primaryColor),
+            style: TextStyle(
+              color: isDestructive
+                  ? AppColor.errorColor
+                  : AppColor.primaryColor,
+            ),
           ),
         ),
       ],

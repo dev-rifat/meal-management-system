@@ -1,3 +1,4 @@
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/error/result.dart';
 import 'package:mass_management/features/auth/domain/entities/auth_user.dart';
 
@@ -13,6 +14,8 @@ abstract class AuthRepository {
     required String email,
     required String username,
     required String password,
+    required UserRole role,
+    required String messId,
   });
 
   Future<Result<void>> logout();
@@ -20,4 +23,13 @@ abstract class AuthRepository {
   /// Returns the currently signed-in user, or `null` if there is no active
   /// session.
   Future<Result<AuthUser?>> getCurrentSession();
+
+  /// Attaches the current session to [messId] and sets its final [role]
+  /// (manager if they created the mess, member if they joined one). Used
+  /// only for an already-authenticated session that somehow has no mess
+  /// yet — sign-up itself now attaches the mess at registration time.
+  Future<Result<AuthUser>> attachMess({
+    required String messId,
+    required UserRole role,
+  });
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import '../../../utils/app_color.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
 class LoadingHelper {
   /// Custom loading widget with configurable size and color

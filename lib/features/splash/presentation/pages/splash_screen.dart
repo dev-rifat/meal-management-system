@@ -4,12 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart' show Lottie;
 import 'package:mass_management/core/routes/app_route.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mass_management/features/splash/presentation/cubit/splash_cubit.dart';
 import 'package:mass_management/features/splash/presentation/cubit/splash_state.dart';
-import '../../../../utils/app_color.dart';
-import '../../../../utils/app_string.dart';
-import '../../../../utils/app_style.dart';
-import '../../../../utils/images.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/constants/app_string.dart';
+import 'package:mass_management/core/theme/app_style.dart';
+import 'package:mass_management/core/constants/images.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,6 +28,10 @@ class _SplashScreenState extends State<SplashScreen> {
     // delay timer and is torn down along with itself via BlocProvider, so
     // there is no leaked Timer tied to this widget's lifecycle anymore.
     context.read<SplashCubit>().checkSession();
+    // AuthBloc is the router guard's source of truth — without this it
+    // would sit at AuthInitial forever, since nothing else in the app ever
+    // asks it to check the session.
+    context.read<AuthBloc>().add(const CheckSessionRequested());
   }
 
   @override
@@ -38,6 +44,8 @@ class _SplashScreenState extends State<SplashScreen> {
         if (!context.mounted) return;
 
         if (state is SplashAuthenticated) {
+          // The router's redirect sends this to the mess-choice gate
+          // instead when the account has no mess yet.
           context.push(AppRoute.dashboard);
         } else if (state is SplashUnauthenticated) {
           context.push(AppRoute.login);

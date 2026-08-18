@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mass_management/core/widgets/app_input_field.dart' show CustomInputField, PasswordInputField;
-import 'package:mass_management/utils/dimensions.dart';
-import '../../../../utils/app_color.dart';
-import '../../../../utils/app_string.dart';
-import '../../../../utils/app_style.dart';
+import 'package:mass_management/core/widgets/app_input_field.dart'
+    show CustomInputField, PasswordInputField;
+import 'package:mass_management/core/theme/dimensions.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/constants/app_string.dart';
+import 'package:mass_management/core/theme/app_style.dart';
 
 Widget userEmailField(TextEditingController controller, {Color? borderColor}) {
   return CustomInputField(
@@ -39,7 +40,8 @@ String emailExp() {
 }
 
 final RegExp passwordRegex = RegExp(
-    r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&*!]).{2,}$');
+  r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&*!]).{2,}$',
+);
 
 Widget userNameField(TextEditingController controller) {
   return CustomInputField(
@@ -84,7 +86,10 @@ Widget userPhoneNumberField(TextEditingController controller) {
   );
 }
 
-Widget userPasswordField({String? hintText, required TextEditingController controller}) {
+Widget userPasswordField({
+  String? hintText,
+  required TextEditingController controller,
+}) {
   return PasswordInputField(
     controller: controller,
     borderColor: Colors.transparent,
@@ -110,7 +115,10 @@ Widget userPasswordField({String? hintText, required TextEditingController contr
   );
 }
 
-Widget userConfirmPasswordField({String? hintText, required TextEditingController pasController}) {
+Widget userConfirmPasswordField({
+  String? hintText,
+  required TextEditingController pasController,
+}) {
   return PasswordInputField(
     controller: pasController,
     borderColor: Colors.transparent,
@@ -138,7 +146,5 @@ Widget userConfirmPasswordField({String? hintText, required TextEditingControlle
 }
 
 Divider divider() {
-  return const Divider(
-    color: AppColor.disableColor,
-  );
+  return const Divider(color: AppColor.disableColor);
 }

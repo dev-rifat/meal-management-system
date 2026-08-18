@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mass_management/core/widgets/custom_app_bar.dart' show CustomAppBar;
+import 'package:mass_management/core/widgets/custom_app_bar.dart'
+    show CustomAppBar;
 import 'package:mass_management/core/widgets/custom_onloading.dart';
 import 'package:mass_management/features/dashboard/domain/entities/balance_summary.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/wallet_cubit.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/wallet_state.dart';
-import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_style.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/app_style.dart';
 import 'transaction_history.dart';
 
 class WalletScreen extends StatelessWidget {
@@ -49,10 +50,7 @@ class _WalletView extends StatelessWidget {
               children: [
                 _walletSummaryCard(state.summary),
                 const SizedBox(height: 20),
-                Text(
-                  "My Transactions",
-                  style: AppStyle.titleText,
-                ),
+                Text("My Transactions", style: AppStyle.titleText),
                 const SizedBox(height: 16),
                 TransactionScreen(transactions: state.transactions),
               ],
@@ -76,8 +74,14 @@ class _WalletView extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Balance", style: TextStyle(color: Colors.white70, fontSize: 16)),
-              Text("Total Meal", style: TextStyle(color: Colors.white70, fontSize: 16)),
+              Text(
+                "Balance",
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+              Text(
+                "Total Meal",
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -106,8 +110,16 @@ class _WalletView extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _infoItem(Icons.arrow_downward, "My Deposit", "৳ ${summary.deposit.toStringAsFixed(2)}"),
-              _infoItem(Icons.arrow_upward, "My Expense", "৳ ${summary.expense.toStringAsFixed(2)}"),
+              _infoItem(
+                Icons.arrow_downward,
+                "My Deposit",
+                "৳ ${summary.deposit.toStringAsFixed(2)}",
+              ),
+              _infoItem(
+                Icons.arrow_upward,
+                "My Expense",
+                "৳ ${summary.expense.toStringAsFixed(2)}",
+              ),
             ],
           ),
         ],
@@ -128,10 +140,17 @@ class _WalletView extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
             Text(
               value,
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

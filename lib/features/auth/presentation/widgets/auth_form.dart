@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mass_management/features/auth/presentation/widgets/sign_up_text_field_widget.dart'
     show userEmailField, userPasswordField, divider;
-import '../../../../utils/app_color.dart';
-import '../../../../utils/dimensions.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/dimensions.dart';
 
 /// Owns and disposes its own controllers (fixing the previous StatelessWidget
 /// version, which recreated them on every rebuild and never disposed them),

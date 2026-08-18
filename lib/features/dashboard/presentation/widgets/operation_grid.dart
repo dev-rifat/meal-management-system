@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/routes/app_route.dart';
-import 'package:mass_management/utils/app_color.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
 /// Pure navigation grid — no business data of its own, just routes to the
-/// meal list / wallet / monthly summary screens.
+/// meal list / wallet / monthly summary screens. "Month Summary" is a
+/// mess-wide financial report and is manager-only (the router also blocks
+/// the route directly, but hiding the tile avoids a dead-end tap for
+/// members).
 class OperationGrid extends StatelessWidget {
-  const OperationGrid({super.key});
+  final UserRole role;
+
+  const OperationGrid({super.key, required this.role});
 
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> operations = [
       {"icon": Icons.list, "label": "Meal List"},
       {"icon": Icons.wallet, "label": "Wallet"},
-      {"icon": Icons.event, "label": "Month Summary"},
+      if (role == UserRole.manager)
+        {"icon": Icons.event, "label": "Month Summary"},
     ];
 
     return GridView.builder(

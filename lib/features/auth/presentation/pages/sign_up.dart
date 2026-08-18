@@ -5,25 +5,25 @@ import 'package:intl/intl.dart';
 import 'package:mass_management/core/routes/app_route.dart' show AppRoute;
 import 'package:mass_management/core/widgets/custom_app_button.dart'
     show CustomAppButton;
-import 'package:mass_management/core/widgets/success_message.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
-import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_style.dart' show AppStyle;
-import 'package:mass_management/utils/dimensions.dart' show Dimensions;
+import 'package:mass_management/features/auth/presentation/widgets/mess_choice_sheet.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/app_style.dart' show AppStyle;
+import 'package:mass_management/core/theme/dimensions.dart' show Dimensions;
 
 class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+  final MessChoiceResult messChoice;
+
+  const SignupPage({super.key, required this.messChoice});
 
   @override
   State<SignupPage> createState() => _SignupPageState();
 }
 
 class _SignupPageState extends State<SignupPage> {
-  bool isMessSignup = false;
   final _formKey = GlobalKey<FormState>();
-  final _createMessFormKey = GlobalKey<FormState>();
 
   // Controllers
   final emailController = TextEditingController();
@@ -32,17 +32,13 @@ class _SignupPageState extends State<SignupPage> {
   final dobController = TextEditingController();
   final passwordController = TextEditingController();
   final confrimpasswordController = TextEditingController();
-  final codeController = TextEditingController();
-
-  final messNameController = TextEditingController();
-  final messNumberController = TextEditingController();
-  final addressController = TextEditingController();
-  final emergencyNumberController = TextEditingController();
-  final cookInfoController = TextEditingController();
 
   bool hidePassword = true;
 
-  get _inputBorder => OutlineInputBorder(
+  // Computed once and reused for every field's border/enabledBorder/focusedBorder
+  // instead of allocating a new OutlineInputBorder on each of the ~36 accesses
+  // (3 per field x ~12 fields) that happen on every build.
+  late final OutlineInputBorder _inputBorder = OutlineInputBorder(
     borderRadius: BorderRadius.circular(6),
     borderSide: BorderSide(color: AppColor.hintColor.withValues(alpha: 0.5)),
   );
@@ -55,46 +51,39 @@ class _SignupPageState extends State<SignupPage> {
     dobController.dispose();
     passwordController.dispose();
     confrimpasswordController.dispose();
-    codeController.dispose();
-    messNameController.dispose();
-    messNumberController.dispose();
-    addressController.dispose();
-    emergencyNumberController.dispose();
-    cookInfoController.dispose();
     super.dispose();
   }
 
   void _handleSubmit() {
-    if (isMessSignup) {
-      if (_createMessFormKey.currentState!.validate()) {
-        // Mess creation belongs to a separate (not-yet-migrated) feature —
-        // there's no domain/use case for it here, so just acknowledge the
-        // tap instead of pretending it succeeded.
-        showSuccessMessage(message: "Mess creation coming soon");
-      }
-    } else {
-      if (_formKey.currentState!.validate()) {
-        context.read<AuthBloc>().add(
-              SignUpRequested(
-                email: emailController.text.trim(),
-                username: usernameController.text.trim(),
-                password: passwordController.text,
-              ),
-            );
-      }
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthBloc>().add(
+        SignUpRequested(
+          email: emailController.text.trim(),
+          username: usernameController.text.trim(),
+          password: passwordController.text,
+          role: widget.messChoice.role,
+          messId: widget.messChoice.messId,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
+      // Only these two states trigger navigation/snackbar work below, so skip
+      // the listener entirely for Loading/Initial/Unauthenticated emissions.
+      listenWhen: (previous, current) =>
+          current is AuthAuthenticated || current is AuthError,
       listener: (context, state) {
         if (state is AuthAuthenticated) {
+          // The router's redirect sends this to the mess-choice gate
+          // instead when the account has no mess yet.
           context.go(AppRoute.dashboard);
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       child: Scaffold(
@@ -102,31 +91,29 @@ class _SignupPageState extends State<SignupPage> {
 
         appBar: AppBar(
           backgroundColor: AppColor.backgroundColor,
-
-          title: Text(isMessSignup ? "Create Mess" : "Signup"),
+          title: const Text("Signup"),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              _buildToggleButtons(),
-              const SizedBox(height: 20),
-              Form(
-                key: isMessSignup ? _createMessFormKey : _formKey,
-                child: isMessSignup ? _buildMessForm() : _buildUserForm(),
-              ),
+              Form(key: _formKey, child: _buildUserForm()),
               const SizedBox(height: 20),
 
               BlocBuilder<AuthBloc, AuthState>(
+                // The builder only branches on AuthLoading vs. everything
+                // else, so only rebuild when that boolean actually flips.
+                buildWhen: (previous, current) =>
+                    (previous is AuthLoading) != (current is AuthLoading),
                 builder: (context, state) {
                   if (state is AuthLoading) {
                     return const CircularProgressIndicator();
                   }
                   return CustomAppButton(
-                    text: isMessSignup ? "Create Mess" : "Sign Up",
+                    text: "Sign Up",
                     widget: Text(
-                      isMessSignup ? "Create Mess" : "Sign Up",
+                      "Sign Up",
                       style: AppStyle.titleText.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColor.cardColor,
@@ -143,70 +130,6 @@ class _SignupPageState extends State<SignupPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  /// Toggle Buttons Full Width
-  Widget _buildToggleButtons() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColor.primaryColor),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => isMessSignup = false),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color: !isMessSignup
-                      ? AppColor.primaryColor
-                      : Colors.transparent,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    bottomLeft: Radius.circular(4),
-                  ),
-                ),
-                child: Text(
-                  "Create User",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: !isMessSignup ? Colors.white : AppColor.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => isMessSignup = true),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color: isMessSignup
-                      ? AppColor.primaryColor
-                      : Colors.transparent,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(4),
-                    bottomRight: Radius.circular(4),
-                  ),
-                ),
-                child: Text(
-                  "Create Mess",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: isMessSignup ? Colors.white : AppColor.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -267,68 +190,6 @@ class _SignupPageState extends State<SignupPage> {
           validator: (value) => _validateInput(value, "Confirm Password"),
 
           suffix: _togglePassword(),
-        ),
-        _rawTitleText("Singup Code", isRequired: true),
-
-        _alertText(
-          "Enter the secret code to join your mess. You can find this code in your email inbox.",
-        ),
-
-        _inputField(
-          "Signup Code",
-          codeController,
-          icon: Icons.verified,
-
-          validator: (value) => _validateInput(value, "Singup Code"),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMessForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _rawTitleText("Mess Name", isRequired: true),
-
-        _inputField(
-          "Mess Name",
-          messNameController,
-          icon: Icons.home,
-
-          validator: (value) => _validateInput(value, "Mess name"),
-        ),
-        _inputField(
-          "Mess Number",
-          messNumberController,
-          icon: Icons.confirmation_number,
-          keyboard: TextInputType.number,
-          validator: (value) => _validateInput(value, "Mess mumber"),
-        ),
-        _rawTitleText("Mess Address", isRequired: true),
-
-        _inputField(
-          "Address",
-          addressController,
-          icon: Icons.location_on,
-          maxLines: 2,
-          validator: (value) => _validateInput(value, "Mess address"),
-        ),
-        _rawTitleText("Emergency Number", isRequired: false),
-        _alertText("Add the house owner's contact number for quick help in emergencies."),
-
-        _inputField(
-          "Emergency Number (optional)",
-          emergencyNumberController,
-          icon: Icons.phone,
-          keyboard: TextInputType.phone,
-        ),
-        _rawTitleText("Cook Info", isRequired: false),
-
-        _inputField(
-          "Cook Info (optional)",
-          cookInfoController,
-          icon: Icons.restaurant,
         ),
       ],
     );

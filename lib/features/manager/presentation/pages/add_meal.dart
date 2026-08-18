@@ -5,8 +5,8 @@ import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/core/widgets/success_message.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_meal_cubit.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_meal_state.dart';
-import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_style.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/app_style.dart';
 
 /// Placeholder value in the manager's member dropdown meaning "nothing
 /// selected yet" — kept separate from the real, cubit-loaded member names.
@@ -44,7 +44,9 @@ class _AddMealState extends State<AddMeal> {
   void initState() {
     super.initState();
     // Default selected user
-    selectedUser = widget.role == "manager" ? _selectMemberPlaceholder : widget.currentUserName;
+    selectedUser = widget.role == "manager"
+        ? _selectMemberPlaceholder
+        : widget.currentUserName;
     context.read<AddMealCubit>().loadMembers();
   }
 
@@ -129,7 +131,10 @@ class _AddMealState extends State<AddMeal> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColor.primaryColor,
             ),
-            child: Text("Add", style: AppStyle.normalText.copyWith(color: Colors.white)),
+            child: Text(
+              "Add",
+              style: AppStyle.normalText.copyWith(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -146,11 +151,11 @@ class _AddMealState extends State<AddMeal> {
     }
 
     context.read<AddMealCubit>().submit(
-          date: selectedDate,
-          mealCounts: _meals,
-          submittedFor: selectedUser,
-          role: widget.role,
-        );
+      date: selectedDate,
+      mealCounts: _meals,
+      submittedFor: selectedUser,
+      role: widget.role,
+    );
   }
 
   @override
@@ -158,10 +163,7 @@ class _AddMealState extends State<AddMeal> {
     final bool isManager = widget.role == "manager";
 
     return Scaffold(
-      appBar: CustomAppBar(
-        title: "Add Meal",
-        backgroundColor: Colors.white,
-      ),
+      appBar: CustomAppBar(title: "Add Meal", backgroundColor: Colors.white),
       backgroundColor: Colors.white,
       body: BlocListener<AddMealCubit, AddMealState>(
         listener: (context, state) {
@@ -170,7 +172,9 @@ class _AddMealState extends State<AddMeal> {
             Navigator.pop(context);
           } else if (state.status == AddMealStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage ?? "Something went wrong")),
+              SnackBar(
+                content: Text(state.errorMessage ?? "Something went wrong"),
+              ),
             );
           }
         },
@@ -182,7 +186,10 @@ class _AddMealState extends State<AddMeal> {
               GestureDetector(
                 onTap: _pickDateTime,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(10),
@@ -197,9 +204,15 @@ class _AddMealState extends State<AddMeal> {
                         "${selectedDate.year}  "
                         "${selectedDate.hour.toString().padLeft(2, '0')}:"
                         "${selectedDate.minute.toString().padLeft(2, '0')} ${selectedDate.hour >= 12 ? 'PM' : 'AM'}",
-                        style: const TextStyle(fontSize: 16, color: Colors.black87),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
                       ),
-                      const Icon(Icons.calendar_today, color: AppColor.primaryColor),
+                      const Icon(
+                        Icons.calendar_today,
+                        color: AppColor.primaryColor,
+                      ),
                     ],
                   ),
                 ),
@@ -210,10 +223,18 @@ class _AddMealState extends State<AddMeal> {
               /// Manager Only: User Selector
               if (isManager)
                 BlocBuilder<AddMealCubit, AddMealState>(
+                  buildWhen: (previous, current) =>
+                      previous.members != current.members,
                   builder: (context, state) {
-                    final dropdownUsers = [_selectMemberPlaceholder, ...state.members];
+                    final dropdownUsers = [
+                      _selectMemberPlaceholder,
+                      ...state.members,
+                    ];
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(10),
@@ -262,7 +283,11 @@ class _AddMealState extends State<AddMeal> {
                   ),
                   IconButton(
                     onPressed: _showAddMealDialog,
-                    icon: const Icon(Icons.add_circle, color: AppColor.primaryColor, size: 30),
+                    icon: const Icon(
+                      Icons.add_circle,
+                      color: AppColor.primaryColor,
+                      size: 30,
+                    ),
                     tooltip: "Add custom meal",
                   ),
                 ],
@@ -279,7 +304,10 @@ class _AddMealState extends State<AddMeal> {
                     String meal = _meals.keys.elementAt(index);
                     double value = _meals[meal]!;
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
@@ -297,20 +325,36 @@ class _AddMealState extends State<AddMeal> {
                           Expanded(
                             child: Text(
                               meal,
-                              style: const TextStyle(fontSize: 16, color: Colors.black),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
                           IconButton(
                             onPressed: () => _changeMealCount(meal, -0.5),
-                            icon: const Icon(Icons.remove_circle, color: Colors.red, size: 28),
+                            icon: const Icon(
+                              Icons.remove_circle,
+                              color: Colors.red,
+                              size: 28,
+                            ),
                           ),
                           Text(
-                            value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                            value % 1 == 0
+                                ? value.toInt().toString()
+                                : value.toStringAsFixed(1),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           IconButton(
                             onPressed: () => _changeMealCount(meal, 0.5),
-                            icon: const Icon(Icons.add_circle, color: Colors.green, size: 28),
+                            icon: const Icon(
+                              Icons.add_circle,
+                              color: Colors.green,
+                              size: 28,
+                            ),
                           ),
                         ],
                       ),
@@ -323,10 +367,16 @@ class _AddMealState extends State<AddMeal> {
 
               /// Submit Button
               BlocBuilder<AddMealCubit, AddMealState>(
+                buildWhen: (previous, current) =>
+                    previous.status != current.status,
                 builder: (context, state) {
                   return CustomAppButton(
-                    onPressed: state.status == AddMealStatus.submitting ? null : _submitMeal,
-                    text: state.status == AddMealStatus.submitting ? "Submitting..." : "Add Meal",
+                    onPressed: state.status == AddMealStatus.submitting
+                        ? null
+                        : _submitMeal,
+                    text: state.status == AddMealStatus.submitting
+                        ? "Submitting..."
+                        : "Add Meal",
                     buttonColor: AppColor.primaryColor,
                   );
                 },

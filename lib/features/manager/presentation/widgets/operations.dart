@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mass_management/core/routes/app_route.dart';
-import 'package:mass_management/utils/app_color.dart' show AppColor;
+import 'package:mass_management/core/theme/app_color.dart' show AppColor;
 
 class OperationsSection extends StatelessWidget {
   const OperationsSection({super.key});
 
+  // Static across all instances/builds — this data never changes at
+  // runtime, so it's hoisted out of build() to avoid reallocating the list
+  // (and its 4 map literals) on every rebuild of this widget.
+  static const List<Map<String, dynamic>> _operations = [
+    {'label': 'Add Market Expense', 'icon': Icons.playlist_add},
+    {'label': 'Add Member Meal', 'icon': Icons.checklist},
+    {'label': 'Add Shared Expense', 'icon': Icons.groups},
+    {'label': 'Expense Lists', 'icon': Icons.format_list_bulleted_rounded},
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> operations = [
-      {'label': 'Add Market Expense', 'icon': Icons.playlist_add},
-      {'label': 'Add Member Meal', 'icon': Icons.checklist},
-      {'label': 'Add Shared Expense', 'icon': Icons.groups},
-      {'label': 'Expense Lists', 'icon': Icons.format_list_bulleted_rounded},
-    ];
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -28,7 +31,7 @@ class OperationsSection extends StatelessWidget {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: operations.length,
+            itemCount: _operations.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               mainAxisSpacing: 5,
@@ -36,7 +39,7 @@ class OperationsSection extends StatelessWidget {
               childAspectRatio: 1,
             ),
             itemBuilder: (context, index) {
-              final op = operations[index];
+              final op = _operations[index];
               return InkWell(
                 onTap: () {
                   if (index == 0) {

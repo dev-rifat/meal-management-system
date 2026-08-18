@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/error/result.dart';
 import 'package:mass_management/core/usecase/usecase.dart';
 import 'package:mass_management/features/auth/domain/entities/auth_user.dart';
@@ -8,15 +9,19 @@ class SignUpParams extends Equatable {
   final String email;
   final String username;
   final String password;
+  final UserRole role;
+  final String messId;
 
   const SignUpParams({
     required this.email,
     required this.username,
     required this.password,
+    required this.role,
+    required this.messId,
   });
 
   @override
-  List<Object?> get props => [email, username, password];
+  List<Object?> get props => [email, username, password, role, messId];
 }
 
 class SignUpUseCase implements UseCase<AuthUser, SignUpParams> {
@@ -30,6 +35,8 @@ class SignUpUseCase implements UseCase<AuthUser, SignUpParams> {
       email: params.email,
       username: params.username,
       password: params.password,
+      role: params.role,
+      messId: params.messId,
     );
   }
 }

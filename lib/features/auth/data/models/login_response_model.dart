@@ -1,3 +1,4 @@
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/features/auth/domain/entities/auth_user.dart';
 
 /// Data-layer DTO for the `POST /auth/login` response body (shaped after
@@ -41,28 +42,31 @@ class LoginResponseModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'accessToken': accessToken,
-        'refreshToken': refreshToken,
-        'id': id,
-        'username': username,
-        'email': email,
-        'firstName': firstName,
-        'lastName': lastName,
-        'gender': gender,
-        'image': image,
-      };
+    'accessToken': accessToken,
+    'refreshToken': refreshToken,
+    'id': id,
+    'username': username,
+    'email': email,
+    'firstName': firstName,
+    'lastName': lastName,
+    'gender': gender,
+    'image': image,
+  };
 
   AuthUser toEntity() {
-    final fullName = [firstName, lastName]
-        .whereType<String>()
-        .where((part) => part.isNotEmpty)
-        .join(' ');
+    final fullName = [
+      firstName,
+      lastName,
+    ].whereType<String>().where((part) => part.isNotEmpty).join(' ');
 
     return AuthUser(
       id: id ?? 0,
       name: fullName.isNotEmpty ? fullName : (username ?? ''),
       email: email ?? '',
       token: accessToken ?? '',
+      // Placeholder — dummyjson has no concept of our roles. The repository
+      // overwrites this with the real, locally-tracked role right after.
+      role: UserRole.member,
     );
   }
 }

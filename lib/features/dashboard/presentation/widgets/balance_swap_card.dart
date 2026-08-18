@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mass_management/features/dashboard/domain/entities/balance_summary.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/dashboard_state.dart';
-import 'package:mass_management/utils/app_color.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
 /// Switches between the mess-wide and personal [BalanceSummary] card.
 /// Reads from the [DashboardCubit] provided higher up by DashboardScreen
@@ -79,7 +79,9 @@ class BalanceCardSwitcher extends StatelessWidget {
         ),
         child: Card(
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           color: Colors.transparent,
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -91,14 +93,18 @@ class BalanceCardSwitcher extends StatelessWidget {
                   children: [
                     Text(
                       summary.label,
-                      style: const TextStyle(color: Colors.white70, fontSize: 16),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
                     ),
                     Align(
                       alignment: Alignment.centerRight,
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         icon: const Icon(Icons.swap_horiz, color: Colors.white),
-                        onPressed: () => context.read<DashboardCubit>().toggleBalanceCard(),
+                        onPressed: () =>
+                            context.read<DashboardCubit>().toggleBalanceCard(),
                       ),
                     ),
                   ],

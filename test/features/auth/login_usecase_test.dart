@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/error/failure.dart';
 import 'package:mass_management/core/error/result.dart';
 import 'package:mass_management/features/auth/domain/entities/auth_user.dart';
@@ -17,27 +18,39 @@ void main() {
     useCase = LoginUseCase(repository);
   });
 
-  const user = AuthUser(id: 1, name: 'Jane', email: 'jane@example.com', token: 'token');
+  const user = AuthUser(
+    id: 1,
+    name: 'Jane',
+    email: 'jane@example.com',
+    token: 'token',
+    role: UserRole.member,
+  );
 
   test('returns the authenticated user on success', () async {
-    when(() => repository.login(email: 'jane@example.com', password: 'secret'))
-        .thenAnswer((_) async => const ResultSuccess(user));
+    when(
+      () => repository.login(email: 'jane@example.com', password: 'secret'),
+    ).thenAnswer((_) async => const ResultSuccess(user));
 
     final result = await useCase(
       const LoginParams(email: 'jane@example.com', password: 'secret'),
     );
 
     expect(result, isA<ResultSuccess<AuthUser>>());
-    result.fold(
-      (_) => fail('expected success'),
-      (data) => expect(data, user),
-    );
-    verify(() => repository.login(email: 'jane@example.com', password: 'secret')).called(1);
+    result.fold((_) => fail('expected success'), (data) => expect(data, user));
+    verify(
+      () => repository.login(email: 'jane@example.com', password: 'secret'),
+    ).called(1);
   });
 
   test('propagates the repository failure on error', () async {
-    when(() => repository.login(email: any(named: 'email'), password: any(named: 'password')))
-        .thenAnswer((_) async => const ResultError(ServerFailure('bad credentials')));
+    when(
+      () => repository.login(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenAnswer(
+      (_) async => const ResultError(ServerFailure('bad credentials')),
+    );
 
     final result = await useCase(
       const LoginParams(email: 'jane@example.com', password: 'wrong'),

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mass_management/core/widgets/custom_app_bar.dart' show CustomAppBar;
+import 'package:mass_management/core/widgets/custom_app_bar.dart'
+    show CustomAppBar;
 import 'package:mass_management/features/manager/domain/entities/expense_summary.dart';
 import 'package:mass_management/features/manager/presentation/cubit/manager_summary_cubit.dart';
 import 'package:mass_management/features/manager/presentation/cubit/manager_summary_state.dart';
 import 'package:mass_management/features/manager/presentation/widgets/operations.dart';
-import 'package:mass_management/features/manager/presentation/widgets/pie_chart.dart' show ChartData, SummaryChart;
+import 'package:mass_management/features/manager/presentation/widgets/pie_chart.dart'
+    show ChartData, SummaryChart;
 import 'package:mass_management/features/manager/presentation/widgets/summary_card.dart';
-import 'package:mass_management/utils/app_color.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
 class MessManagerPage extends StatefulWidget {
   const MessManagerPage({super.key});
@@ -42,11 +44,15 @@ class _MessManagerPageState extends State<MessManagerPage> {
                       subtitle: 'Members',
                     ),
                     SummaryCard(
-                      title: summary != null ? _formatCurrency(summary.totalCost) : '-',
+                      title: summary != null
+                          ? _formatCurrency(summary.totalCost)
+                          : '-',
                       subtitle: 'Total cost',
                     ),
                     SummaryCard(
-                      title: summary != null ? _formatCurrency(summary.balance) : '-',
+                      title: summary != null
+                          ? _formatCurrency(summary.balance)
+                          : '-',
                       subtitle: 'Balance',
                     ),
                   ],
@@ -89,14 +95,18 @@ class _MessManagerPageState extends State<MessManagerPage> {
   }
 
   _appBar() => CustomAppBar(
-        leadingWidth: 300,
-        leading: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14.0),
-          child: Text(
-            "Manager",
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 20),
-          ),
+    leadingWidth: 300,
+    leading: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14.0),
+      child: Text(
+        "Manager",
+        style: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w700,
+          fontSize: 20,
         ),
-        backgroundColor: AppColor.backgroundColor,
-      );
+      ),
+    ),
+    backgroundColor: AppColor.backgroundColor,
+  );
 }

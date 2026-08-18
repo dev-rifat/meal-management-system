@@ -9,10 +9,11 @@ import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart'
 import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mass_management/features/auth/presentation/widgets/auth_form.dart'
     show AuthForm, AuthFormState;
-import '../../../../utils/app_color.dart';
-import '../../../../utils/app_string.dart';
-import '../../../../utils/app_style.dart';
-import '../../../../utils/dimensions.dart';
+import 'package:mass_management/features/auth/presentation/widgets/mess_choice_sheet.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/constants/app_string.dart';
+import 'package:mass_management/core/theme/app_style.dart';
+import 'package:mass_management/core/theme/dimensions.dart';
 import '../widgets/common_widget.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -36,20 +37,26 @@ class _SignInScreenState extends State<SignInScreen> {
 
   void _handleAuthFormSubmit(String email, String password) {
     context.read<AuthBloc>().add(
-          LoginRequested(email: email, password: password),
-        );
+      LoginRequested(email: email, password: password),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
+      // Only these two states trigger navigation/snackbar work below, so skip
+      // the listener entirely for Loading/Initial/Unauthenticated emissions.
+      listenWhen: (previous, current) =>
+          current is AuthAuthenticated || current is AuthError,
       listener: (context, state) {
         if (state is AuthAuthenticated) {
+          // The router's redirect sends this to the mess-choice gate
+          // instead when the account has no mess yet.
           context.go(AppRoute.dashboard);
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       child: Scaffold(
@@ -80,10 +87,6 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 30),
 
                     _buildLoginButton(context),
-
-                    const SizedBox(height: 24),
-
-                    guestButtonLayout(context),
 
                     const SizedBox(height: 30),
 
@@ -125,6 +128,10 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Widget _buildLoginButton(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
+      // The builder only branches on AuthLoading vs. everything else, so
+      // only rebuild when that boolean actually flips.
+      buildWhen: (previous, current) =>
+          (previous is AuthLoading) != (current is AuthLoading),
       builder: (context, state) {
         if (state is AuthLoading) {
           return const CircularProgressIndicator();
@@ -153,7 +160,16 @@ class _SignInScreenState extends State<SignInScreen> {
       context: context,
       firstText: "New user? ",
       endText: AppString.textSignUp,
-      onAction: () => context.push(AppRoute.signUp),
+      onAction: () => _openMessChoicePicker(context),
     );
+  }
+
+  /// "Create a mess" or "join one" is decided first, via a bottom sheet —
+  /// only once that's resolved does the actual sign-up form open, carrying
+  /// the choice along so the account is created already attached to it.
+  Future<void> _openMessChoicePicker(BuildContext context) async {
+    final choice = await pickMessChoice(context);
+    if (choice == null || !context.mounted) return;
+    context.push(AppRoute.signUp, extra: choice);
   }
 }

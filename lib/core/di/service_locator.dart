@@ -3,6 +3,7 @@ import 'package:mass_management/features/auth/injection_container.dart';
 import 'package:mass_management/features/dashboard/injection_container.dart';
 import 'package:mass_management/features/manager/injection_container.dart';
 import 'package:mass_management/features/members/injection_container.dart';
+import 'package:mass_management/features/mess/injection_container.dart';
 import 'package:mass_management/features/profile/injection_container.dart';
 import 'package:mass_management/features/splash/injection_container.dart';
 
@@ -17,6 +18,7 @@ void setupServiceLocator() {
   initDashboardInjection(sl);
   initManagerInjection(sl);
   initMembersInjection(sl);
+  initMessInjection(sl);
   initProfileInjection(sl);
   initSplashInjection(sl);
 }

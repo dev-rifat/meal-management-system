@@ -1,15 +1,19 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/core/widgets/custom_onloading.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:mass_management/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:mass_management/features/dashboard/presentation/widgets/balance_swap_card.dart';
 import 'package:mass_management/features/dashboard/presentation/widgets/operation_grid.dart';
-import 'package:mass_management/utils/app_color.dart';
-import 'package:mass_management/utils/app_style.dart';
-import 'package:mass_management/utils/dimensions.dart';
+import 'package:mass_management/core/theme/app_color.dart';
+import 'package:mass_management/core/theme/app_style.dart';
+import 'package:mass_management/core/theme/dimensions.dart';
 import 'transaction_history.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -29,6 +33,11 @@ class _DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final role = authState is AuthAuthenticated
+        ? authState.user.role
+        : UserRole.member;
+
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       appBar: _appBarTitle(),
@@ -41,10 +50,20 @@ class _DashboardView extends StatelessWidget {
             const SizedBox(height: 30),
             _titleText("Operations"),
             const SizedBox(height: 10),
-            const OperationGrid(),
+            OperationGrid(role: role),
             _titleText("Transaction History"),
             const SizedBox(height: 10),
             BlocBuilder<DashboardCubit, DashboardState>(
+              // The transaction list only depends on `transactions`, but the
+              // cubit also emits new states when the balance card is
+              // toggled (a different field). Skip rebuilding this subtree
+              // for those unrelated emissions.
+              buildWhen: (previous, current) {
+                if (previous is DashboardLoaded && current is DashboardLoaded) {
+                  return previous.transactions != current.transactions;
+                }
+                return previous.runtimeType != current.runtimeType;
+              },
               builder: (context, state) {
                 if (state is DashboardLoaded) {
                   return TransactionScreen(transactions: state.transactions);
@@ -86,14 +105,21 @@ class _DashboardView extends StatelessWidget {
       leading: CircleAvatar(
         radius: 40,
         backgroundColor: Colors.blueAccent,
-        child: Image.network("https://cdn.pixabay.com/photo/2023/01/31/01/50/crown-7756927_1280.png"),
+        child: CachedNetworkImage(
+          imageUrl:
+              "https://cdn.pixabay.com/photo/2023/01/31/01/50/crown-7756927_1280.png",
+          placeholder: (context, url) =>
+              LoadingHelper.customLoading(color: Colors.white, sizeFactor: 0.4),
+          errorWidget: (context, url, error) =>
+              const Icon(Icons.person, color: Colors.white),
+        ),
       ),
       actions: const [Icon(Icons.notifications_none), SizedBox(width: 10)],
     );
   }
 
   Widget _titleText(String s) => Text(
-        s,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      );
+    s,
+    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  );
 }

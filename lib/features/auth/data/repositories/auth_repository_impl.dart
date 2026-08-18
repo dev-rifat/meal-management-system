@@ -1,3 +1,4 @@
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/error/exceptions.dart';
 import 'package:mass_management/core/error/failure.dart';
 import 'package:mass_management/core/error/result.dart';
@@ -28,7 +29,17 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await remoteDataSource.login(
         LoginRequestModel(email: email, password: password),
       );
-      final user = response.toEntity();
+      final baseUser = response.toEntity();
+      // dummyjson has no concept of our roles — look up whatever role this
+      // email signed up with locally, defaulting to member if unseen.
+      final user = AuthUser(
+        id: baseUser.id,
+        name: baseUser.name,
+        email: baseUser.email,
+        token: baseUser.token,
+        role: localDataSource.roleForEmail(email),
+        messId: localDataSource.messIdForEmail(email),
+      );
       localDataSource.saveSession(user);
       return ResultSuccess(user);
     } on NetworkException catch (e) {
@@ -47,12 +58,16 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String username,
     required String password,
+    required UserRole role,
+    required String messId,
   }) async {
     try {
       final user = localDataSource.registerUser(
         email: email,
         username: username,
         password: password,
+        role: role,
+        messId: messId,
       );
       return ResultSuccess(user);
     } on ServerException catch (e) {
@@ -69,5 +84,18 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<AuthUser?>> getCurrentSession() async {
     return ResultSuccess(localDataSource.currentUser);
+  }
+
+  @override
+  Future<Result<AuthUser>> attachMess({
+    required String messId,
+    required UserRole role,
+  }) async {
+    try {
+      final user = localDataSource.attachMess(messId: messId, role: role);
+      return ResultSuccess(user);
+    } on UnauthenticatedException catch (e) {
+      return ResultError(UnauthenticatedFailure(e.message));
+    }
   }
 }

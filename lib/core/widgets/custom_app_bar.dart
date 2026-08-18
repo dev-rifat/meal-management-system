@@ -28,18 +28,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: titleWidget ??
+      title:
+          titleWidget ??
           (title != null
-              ? Text(title!, style: const TextStyle(fontWeight: FontWeight.w600))
+              ? Text(
+                  title!,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                )
               : null),
       centerTitle: centerTitle,
       actions: actions,
       leading: leading,
       scrolledUnderElevation: 0, // Prevent color change on scroll
       surfaceTintColor: Colors.transparent, // Disable Material 3 tint
-      iconTheme: IconThemeData(color: Colors.black),
+      iconTheme: const IconThemeData(color: Colors.black),
       leadingWidth: leadingWidth,
-      backgroundColor: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor:
+          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       elevation: elevation,
     );
   }
