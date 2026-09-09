@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mass_management/core/widgets/app_input_field.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
+import 'package:mass_management/core/utils/date_formatter.dart';
 import 'package:mass_management/features/manager/domain/entities/expense.dart';
 import 'package:mass_management/features/manager/presentation/cubit/expense_list_cubit.dart';
 import 'package:mass_management/features/manager/presentation/cubit/expense_list_state.dart';
@@ -32,7 +33,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColor.backgroundColor,
       appBar: _appBar(),
       body: Column(
         children: [
@@ -103,12 +104,10 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                       color: AppColor.hintColor.withValues(alpha: 0.1),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: isMarket
-                              ? Colors.green
-                              : Colors.blue,
+                          backgroundColor: _typeColor(isMarket),
                           child: Icon(
                             isMarket ? Icons.shopping_cart : Icons.people,
-                            color: Colors.white,
+                            color: AppColor.cardColor,
                           ),
                         ),
                         title: Text(
@@ -125,15 +124,15 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.calendar_today,
                                   size: 14,
-                                  color: Colors.grey,
+                                  color: AppColor.hintColor,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  _formatDate(expense.date),
-                                  style: const TextStyle(color: Colors.grey),
+                                  formatDateYmd(expense.date),
+                                  style: TextStyle(color: AppColor.hintColor),
                                 ),
                               ],
                             ),
@@ -141,7 +140,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                             // hardcoded "@Rifat Al Hasan" shown on every item.
                             Text(
                               "@${expense.spentBy}",
-                              style: const TextStyle(color: Colors.grey),
+                              style: TextStyle(color: AppColor.hintColor),
                             ),
                           ],
                         ),
@@ -162,9 +161,9 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: isMarket
-                                    ? Colors.green.withValues(alpha: 0.2)
-                                    : Colors.blue.withValues(alpha: 0.2),
+                                color: _typeColor(
+                                  isMarket,
+                                ).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -172,7 +171,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: isMarket ? Colors.green : Colors.blue,
+                                  color: _typeColor(isMarket),
                                 ),
                               ),
                             ),
@@ -190,8 +189,8 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
     );
   }
 
-  String _formatDate(DateTime date) =>
-      "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  Color _typeColor(bool isMarket) =>
+      isMarket ? AppColor.successColor : AppColor.primaryColor;
 
   Widget _buildFilterChip(
     BuildContext context,
@@ -214,11 +213,14 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
         onSelected: (_) => context.read<ExpenseListCubit>().filterByType(type),
         showCheckmark: false,
         selectedColor: AppColor.primaryColor,
-        labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
-        backgroundColor: Colors.grey[200],
+        labelStyle: TextStyle(
+          color: isSelected ? AppColor.cardColor : AppColor.normalTextColor,
+        ),
+        backgroundColor: AppColor.disableColor,
       ),
     );
   }
-}
 
-_appBar() => CustomAppBar(title: "All Expense", backgroundColor: Colors.white);
+  CustomAppBar _appBar() =>
+      CustomAppBar(title: "All Expense", backgroundColor: AppColor.backgroundColor);
+}

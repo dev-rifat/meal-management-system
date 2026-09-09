@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mass_management/core/enums/user_role.dart';
+import 'package:mass_management/core/widgets/app_input_field.dart'
+    show CustomInputField;
 import 'package:mass_management/core/widgets/confirm_dialog.dart'
     show showConfirmDialog;
 import 'package:mass_management/core/widgets/custom_app_bar.dart'
     show CustomAppBar;
+import 'package:mass_management/core/widgets/custom_onloading.dart'
+    show LoadingHelper;
 import 'package:mass_management/features/members/domain/entities/member.dart';
 import 'package:mass_management/features/members/presentation/cubit/members_cubit.dart';
 import 'package:mass_management/features/members/presentation/cubit/members_state.dart';
@@ -66,13 +70,13 @@ class _MemberListPageState extends State<MemberListPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
+                  CustomInputField(
                     controller: nameController,
-                    decoration: const InputDecoration(labelText: "Name"),
+                    hintText: "Name",
                   ),
-                  TextField(
+                  CustomInputField(
                     controller: emailController,
-                    decoration: const InputDecoration(labelText: "Email"),
+                    hintText: "Email",
                   ),
                   DropdownButtonFormField<MemberPaymentStatus>(
                     initialValue: paymentStatus,
@@ -135,7 +139,7 @@ class _MemberListPageState extends State<MemberListPage> {
           child: Text(
             "Member List",
             style: TextStyle(
-              color: Colors.black,
+              color: AppColor.normalTextColor,
               fontWeight: FontWeight.w700,
               fontSize: 20,
             ),
@@ -157,7 +161,7 @@ class _MemberListPageState extends State<MemberListPage> {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.grey.shade200,
+                fillColor: AppColor.disableColor,
               ),
               onChanged: (query) => context.read<MembersCubit>().search(query),
             ),
@@ -165,9 +169,7 @@ class _MemberListPageState extends State<MemberListPage> {
               child: BlocBuilder<MembersCubit, MembersState>(
                 builder: (context, state) {
                   return switch (state) {
-                    MembersLoading() => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    MembersLoading() => LoadingHelper.defaultLoading(),
                     MembersError() => Center(child: Text(state.message)),
                     MembersLoaded() => _MemberListView(
                       members: state.members,
@@ -186,6 +188,8 @@ class _MemberListPageState extends State<MemberListPage> {
   }
 }
 
+/// Renders a loaded member list; [canModify] gates the update/delete popup
+/// menu (managers only — members see the same list read-only).
 class _MemberListView extends StatelessWidget {
   final List<Member> members;
   final bool canModify;
@@ -209,7 +213,7 @@ class _MemberListView extends StatelessWidget {
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
+            color: AppColor.disableColor,
             borderRadius: BorderRadius.circular(8),
           ),
           child: ListTile(
@@ -236,8 +240,8 @@ class _MemberListView extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: member.paymentStatus == MemberPaymentStatus.due
-                        ? Colors.red
-                        : Colors.green,
+                        ? AppColor.errorColor
+                        : AppColor.successColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

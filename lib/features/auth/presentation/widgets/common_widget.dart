@@ -5,7 +5,6 @@ import 'package:mass_management/core/theme/app_style.dart';
 import 'package:mass_management/core/theme/dimensions.dart';
 
 Widget titleTextLayout({
-  required BuildContext context,
   required String titleText,
   required String subTitleText,
   required String subText,
@@ -21,24 +20,22 @@ Widget titleTextLayout({
         ),
       ),
       const SizedBox(height: 6),
-      _subTextLayout(context, subTitleText, subText),
+      _subTextLayout(subTitleText, subText),
     ],
   );
 }
 
-Widget _subTextLayout(BuildContext context, String text, String subtext) {
+Widget _subTextLayout(String text, String subtext) {
   return Column(
     children: [
       Text(
         text,
-        style: AppStyle.titleText.copyWith(
-          color: Theme.of(context).disabledColor.withValues(alpha: 0.5),
-        ),
+        style: AppStyle.titleText.copyWith(color: AppColor.hintColor),
       ),
       Text(
         subtext,
         style: AppStyle.titleText.copyWith(
-          color: Theme.of(context).disabledColor.withValues(alpha: 0.5),
+          color: AppColor.hintColor,
           fontSize: Dimensions.fontSizeDefault,
         ),
       ),
@@ -47,7 +44,6 @@ Widget _subTextLayout(BuildContext context, String text, String subtext) {
 }
 
 Widget createUserAccount({
-  required BuildContext context,
   required String firstText,
   required String endText,
   required VoidCallback onAction,
@@ -67,7 +63,7 @@ Widget createUserAccount({
           TextSpan(
             text: endText,
             style: AppStyle.titleText.copyWith(
-              color: Colors.blue,
+              color: AppColor.primaryColor,
               fontSize: Dimensions.radiusMid - 2,
               fontWeight: FontWeight.bold,
             ),

@@ -16,6 +16,10 @@ import 'package:mass_management/features/profile/presentation/pages/profile.dart
 
 import '../manager/presentation/pages/add_meal.dart';
 
+/// Bottom-nav host shared by both roles — reused with a role-derived
+/// `ValueKey` (see `app_page.dart`) so switching roles gets a fresh
+/// `PersistentTabController` instead of reusing one sized for the other
+/// role's tab count.
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
 
@@ -48,7 +52,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
       title: title,
       activeColorPrimary: AppColor.primaryColor,
       activeColorSecondary: AppColor.cardColor,
-      inactiveColorPrimary: Colors.grey,
+      inactiveColorPrimary: AppColor.hintColor,
     );
   }
 
@@ -112,9 +116,9 @@ class _MainNavScreenState extends State<MainNavScreen> {
       stateManagement: true,
       decoration: NavBarDecoration(
         borderRadius: BorderRadius.circular(20.0),
-        colorBehindNavBar: Colors.white,
+        colorBehindNavBar: AppColor.cardColor,
       ),
-      navBarStyle: NavBarStyle.style7, //  Style 15
+      navBarStyle: NavBarStyle.style7,
     );
   }
 }

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
+/// The app's one button widget — every screen uses this instead of
+/// `ElevatedButton` for a consistent look. Pass [widget] to render custom
+/// content in place of [text] (e.g. an already-styled `Text`).
 class CustomAppButton extends StatelessWidget {
   final String text;
   final Color buttonColor;
@@ -26,8 +30,8 @@ class CustomAppButton extends StatelessWidget {
     this.prefixWidget,
     this.suffixWidget,
     this.btnTextStyle,
-    this.buttonColor = Colors.blue,
-    this.buttonTextColor = Colors.white,
+    this.buttonColor = AppColor.primaryColor,
+    this.buttonTextColor = AppColor.cardColor,
     this.onPressed,
     this.buttonRadius = 30,
   });

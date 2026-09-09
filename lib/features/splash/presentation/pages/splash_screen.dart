@@ -48,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
           // instead when the account has no mess yet.
           context.push(AppRoute.dashboard);
         } else if (state is SplashUnauthenticated) {
-          context.push(AppRoute.login);
+          context.push(AppRoute.welcome);
         }
       },
       child: Scaffold(
@@ -60,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF000000), Color(0xFF3D74B6)],
+              colors: [AppColor.secondaryColor, AppColor.primaryColor],
             ),
           ),
           child: Column(

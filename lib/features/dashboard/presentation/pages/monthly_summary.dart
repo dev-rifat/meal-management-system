@@ -283,7 +283,7 @@ class _MonthlySummaryView extends StatelessWidget {
                   ? "Status: ✅ Paid (৳${due.toStringAsFixed(0)} extra)"
                   : "Status: ❌ Due (৳${due.abs().toStringAsFixed(0)})",
               style: TextStyle(
-                color: due >= 0 ? Colors.green : Colors.red,
+                color: due >= 0 ? AppColor.successColor : AppColor.errorColor,
                 fontWeight: FontWeight.w600,
               ),
             ),

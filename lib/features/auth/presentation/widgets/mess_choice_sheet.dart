@@ -22,12 +22,23 @@ class MessChoiceResult {
 }
 
 /// Opens the create/join choice as a dismissible bottom sheet *before* an
-/// account exists — used from the sign-in screen's "Register Account" tap.
-/// Resolves to `null` if the user backs out without choosing.
-Future<MessChoiceResult?> pickMessChoice(BuildContext context) {
+/// account exists — used from the welcome screen's "Create a Mess" /
+/// "Join with a Pass Code" buttons. [initiallyCreate] preselects the mode
+/// matching whichever button was tapped; [allowModeSwitch] hides the
+/// create/join toggle so the sheet only shows the field for that one
+/// action (the generic entry point still gets the switchable toggle via
+/// [showMessChoiceSheet]). Resolves to `null` if the user backs out
+/// without choosing.
+Future<MessChoiceResult?> pickMessChoice(
+  BuildContext context, {
+  bool initiallyCreate = true,
+  bool allowModeSwitch = true,
+}) {
   return _openSheet<MessChoiceResult>(
     context,
     locked: false,
+    initiallyCreate: initiallyCreate,
+    allowModeSwitch: allowModeSwitch,
     onChosen: (sheetContext, mess, role) {
       Navigator.pop(
         sheetContext,
@@ -58,6 +69,8 @@ Future<void> showMessChoiceSheet(BuildContext context) {
 Future<T?> _openSheet<T>(
   BuildContext context, {
   required bool locked,
+  bool initiallyCreate = true,
+  bool allowModeSwitch = true,
   required MessChosen onChosen,
 }) {
   return showModalBottomSheet<T>(
@@ -71,7 +84,12 @@ Future<T?> _openSheet<T>(
     ),
     builder: (sheetContext) => BlocProvider(
       create: (_) => sl<MessCubit>(),
-      child: MessChoiceSheet(locked: locked, onChosen: onChosen),
+      child: MessChoiceSheet(
+        locked: locked,
+        initiallyCreate: initiallyCreate,
+        allowModeSwitch: allowModeSwitch,
+        onChosen: onChosen,
+      ),
     ),
   );
 }
@@ -81,11 +99,15 @@ typedef MessChosen =
 
 class MessChoiceSheet extends StatefulWidget {
   final bool locked;
+  final bool initiallyCreate;
+  final bool allowModeSwitch;
   final MessChosen onChosen;
 
   const MessChoiceSheet({
     super.key,
     required this.locked,
+    this.initiallyCreate = true,
+    this.allowModeSwitch = true,
     required this.onChosen,
   });
 
@@ -94,7 +116,7 @@ class MessChoiceSheet extends StatefulWidget {
 }
 
 class _MessChoiceSheetState extends State<MessChoiceSheet> {
-  bool _isCreateMode = true;
+  late bool _isCreateMode = widget.initiallyCreate;
   final _formKey = GlobalKey<FormState>();
   final _messNameController = TextEditingController();
   final _inviteCodeController = TextEditingController();
@@ -204,14 +226,18 @@ class _MessChoiceSheetState extends State<MessChoiceSheet> {
                     ),
                   ),
                   Text(
-                    'How will you use Mess Manager?',
+                    widget.allowModeSwitch
+                        ? 'How will you use Mess Manager?'
+                        : (_isCreateMode
+                              ? 'Create a new mess'
+                              : 'Join with a pass code'),
                     style: AppStyle.titleText.copyWith(
                       fontSize: Dimensions.fontSizeMid,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _buildToggle(),
-                  const SizedBox(height: 24),
+                  if (widget.allowModeSwitch) _buildToggle(),
+                  if (widget.allowModeSwitch) const SizedBox(height: 24),
                   if (_isCreateMode) _buildCreateForm() else _buildJoinForm(),
                   const SizedBox(height: 24),
                   BlocBuilder<MessCubit, MessState>(

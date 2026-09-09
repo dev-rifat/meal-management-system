@@ -14,6 +14,8 @@ class AuthUser extends Equatable {
   /// post-signup create-mess/join-mess step.
   final String? messId;
 
+  final String? phone;
+
   const AuthUser({
     required this.id,
     required this.name,
@@ -21,8 +23,9 @@ class AuthUser extends Equatable {
     required this.token,
     required this.role,
     this.messId,
+    this.phone,
   });
 
   @override
-  List<Object?> get props => [id, name, email, token, role, messId];
+  List<Object?> get props => [id, name, email, token, role, messId, phone];
 }

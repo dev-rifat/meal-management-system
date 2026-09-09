@@ -6,6 +6,7 @@ import 'package:mass_management/core/widgets/app_input_field.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/core/widgets/success_message.dart';
+import 'package:mass_management/core/utils/date_formatter.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_expense_cubit.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_expense_state.dart';
 import 'package:mass_management/core/theme/app_color.dart';
@@ -28,7 +29,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    _dateController.text = _formatDate(_selectedDate);
+    _dateController.text = formatDateYmd(_selectedDate);
     context.read<AddExpenseCubit>().loadMembers();
   }
 
@@ -41,9 +42,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     super.dispose();
   }
 
-  String _formatDate(DateTime date) =>
-      "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-
   Future<void> _pickDate() async {
     DateTime? date = await showDatePicker(
       context: context,
@@ -54,7 +52,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (date != null) {
       setState(() {
         _selectedDate = date;
-        _dateController.text = _formatDate(date);
+        _dateController.text = formatDateYmd(date);
       });
     }
   }

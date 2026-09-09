@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
 InputDecoration _baseInputDecoration({
   String? hintText,
@@ -19,26 +20,32 @@ InputDecoration _baseInputDecoration({
     hintText: hintText,
     labelText: labelText,
     labelStyle: hintStyle ?? const TextStyle(),
-    hintStyle: hintStyle ?? const TextStyle(color: Colors.grey),
+    hintStyle: hintStyle ?? TextStyle(color: AppColor.hintColor),
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
     border: border,
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(cornerRadius),
-      borderSide: BorderSide(color: borderColor ?? Colors.grey),
+      borderSide: BorderSide(color: borderColor ?? AppColor.hintColor),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(cornerRadius),
-      borderSide: BorderSide(color: borderColor ?? Colors.grey),
+      borderSide: BorderSide(color: borderColor ?? AppColor.hintColor),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(cornerRadius),
       borderSide: BorderSide(color: errorBorderColor ?? Colors.transparent),
     ),
-    errorStyle: const TextStyle(color: Colors.red, fontStyle: FontStyle.italic),
+    errorStyle: TextStyle(
+      color: AppColor.errorColor,
+      fontStyle: FontStyle.italic,
+    ),
   );
 }
 
+/// Shared text-field styling used across the app's forms. Set
+/// [isHideLabelText] to show [hintText] as a placeholder instead of a
+/// floating label.
 class CustomInputField extends StatelessWidget {
   final TextEditingController controller;
   final String? hintText;
@@ -77,7 +84,7 @@ class CustomInputField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      cursorColor: cursorColor ?? const Color(0xFF3B3B3B),
+      cursorColor: cursorColor ?? AppColor.normalTextColor,
       validator: validator,
       keyboardType: textInputType,
       onChanged: onChanged,
@@ -96,6 +103,8 @@ class CustomInputField extends StatelessWidget {
   }
 }
 
+/// Same styling as [CustomInputField], but obscures its text and manages
+/// its own show/hide toggle.
 class PasswordInputField extends StatefulWidget {
   final TextEditingController controller;
   final String? hintText;
@@ -141,7 +150,7 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
       validator: widget.validator,
       controller: widget.controller,
       obscureText: obscureText,
-      cursorColor: widget.cursorColor ?? const Color(0xFF3B3B3B),
+      cursorColor: widget.cursorColor ?? AppColor.normalTextColor,
       onChanged: widget.onChanged,
       decoration: widget.inputDecoration ??
           _baseInputDecoration(

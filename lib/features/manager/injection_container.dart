@@ -18,12 +18,11 @@ import 'package:mass_management/features/manager/presentation/cubit/manager_summ
 
 /// Registers every dependency the manager feature needs into [sl].
 ///
-/// This is NOT called anywhere yet — a central `service_locator.dart` (owned
-/// by a different part of this refactor) will call `initManagerInjection(sl)`
-/// once it exists, alongside similar init functions for other features. That
-/// same central pass is also responsible for wrapping each manager route in
-/// `app_page.dart` with a `BlocProvider(create: (_) => sl<XCubit>())` for the
-/// cubit(s) that route's page reads via `context.read`/`BlocBuilder`.
+/// Called from `core/di/service_locator.dart`, alongside the equivalent
+/// init function for every other feature. Each manager route in
+/// `app_page.dart` separately wraps itself in a
+/// `BlocProvider(create: (_) => sl<XCubit>())` for the cubit(s) that
+/// route's page reads via `context.read`/`BlocBuilder`.
 void initManagerInjection(GetIt sl) {
   // In-memory demo data store — no backend exists for mess-management data
   // yet, so this seeds the same values the old widgets hardcoded directly.

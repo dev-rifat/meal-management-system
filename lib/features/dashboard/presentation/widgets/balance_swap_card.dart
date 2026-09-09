@@ -145,7 +145,7 @@ class BalanceCardSwitcher extends StatelessWidget {
   Widget _balanceItem(IconData icon, String label, String amount) {
     return Row(
       children: [
-        Icon(icon, color: Colors.orange, size: 20),
+        Icon(icon, color: AppColor.pendingTextColor, size: 20),
         const SizedBox(width: 4),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,

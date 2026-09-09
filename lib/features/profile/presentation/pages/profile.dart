@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:mass_management/core/routes/app_route.dart';
 import 'package:mass_management/core/widgets/confirm_dialog.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
+import 'package:mass_management/core/widgets/custom_onloading.dart'
+    show LoadingHelper;
 import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mass_management/features/profile/domain/entities/profile.dart';
@@ -15,6 +17,8 @@ import 'package:mass_management/features/profile/presentation/cubit/profile_stat
 import 'package:mass_management/core/theme/app_color.dart';
 import 'package:mass_management/core/theme/app_style.dart';
 
+/// Resolves its own [ProfileCubit] from the service locator — unlike most
+/// other pages, callers don't need to provide one.
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -27,6 +31,7 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
+/// Expects a [ProfileCubit] already provided above it (by [ProfilePage]).
 class _ProfileView extends StatelessWidget {
   const _ProfileView();
 
@@ -47,12 +52,8 @@ class _ProfileView extends StatelessWidget {
           backgroundColor: AppColor.backgroundColor,
           appBar: _buildAppBar(),
           body: switch (state) {
-            ProfileLoading() => const Center(
-              child: CircularProgressIndicator(),
-            ),
-            ProfileLoggedOut() => const Center(
-              child: CircularProgressIndicator(),
-            ),
+            ProfileLoading() => LoadingHelper.defaultLoading(),
+            ProfileLoggedOut() => LoadingHelper.defaultLoading(),
             ProfileError(message: final message) => Center(
               child: Text(message),
             ),
@@ -75,7 +76,7 @@ class _ProfileView extends StatelessWidget {
         child: Text(
           "Profile",
           style: TextStyle(
-            color: Colors.black,
+            color: AppColor.normalTextColor,
             fontWeight: FontWeight.w700,
             fontSize: 20,
           ),
@@ -143,7 +144,7 @@ class _ProfileView extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 profile.phoneNumber,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 14, color: AppColor.hintColor),
               ),
             ],
           ),
@@ -179,7 +180,7 @@ class _ProfileView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blueGrey),
+          Icon(icon, color: AppColor.hintColor),
           const SizedBox(width: 12),
           Text("$title:", style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(width: 8),
@@ -204,15 +205,15 @@ class _ProfileView extends StatelessWidget {
   Widget _logoutButton(BuildContext context) {
     return InkWell(
       onTap: () => _handleLogoutTap(context),
-      child: const Padding(
-        padding: EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
-            Icon(Icons.logout, color: Colors.red, size: 22),
-            SizedBox(width: 8),
+            Icon(Icons.logout, color: AppColor.errorColor, size: 22),
+            const SizedBox(width: 8),
             Text(
               "Logout",
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+              style: TextStyle(fontSize: 16, color: AppColor.normalTextColor),
             ),
           ],
         ),

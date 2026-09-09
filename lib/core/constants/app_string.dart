@@ -20,4 +20,6 @@ class AppString {
       "The password field is required.";
   static const String theConfirmPasswordFieldIsRequired =
       "The confirm password field is required.";
+  static const String thePhoneNumberFieldIsRequired =
+      "The phone number field is required.";
 }

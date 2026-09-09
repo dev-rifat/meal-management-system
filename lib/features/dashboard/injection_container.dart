@@ -15,10 +15,8 @@ import 'package:mass_management/features/dashboard/presentation/cubit/wallet_cub
 
 /// Registers every dependency the dashboard feature needs into [sl].
 ///
-/// This is NOT called anywhere yet — a central `service_locator.dart`
-/// (owned by a different part of this refactor) will call
-/// `initDashboardInjection(sl)` once it exists, alongside similar init
-/// functions for other features.
+/// Called from `core/di/service_locator.dart`, alongside the equivalent
+/// init function for every other feature.
 void initDashboardInjection(GetIt sl) {
   // In-memory store — there is no backend for mess-management data, so this
   // needs to be a singleton or every screen would see its own copy and

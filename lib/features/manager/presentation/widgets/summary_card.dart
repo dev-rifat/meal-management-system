@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:mass_management/core/theme/app_color.dart';
 
 class SummaryCard extends StatelessWidget {
   final String title;
@@ -14,9 +14,8 @@ class SummaryCard extends StatelessWidget {
         margin: const EdgeInsets.all(6),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
+          color: AppColor.disableColor,
           borderRadius: BorderRadius.circular(8),
-          // boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,

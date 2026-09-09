@@ -59,23 +59,32 @@ lib/
 │   ├── di/                        # service_locator.dart — root get_it setup, calls each
 │   │                               feature's injection_container()
 │   ├── enums/                     # shared enums (e.g. UserRole)
-│   ├── error/                     # Failure / Result / exception types used across layers
-│   ├── network/                   # api_client.dart — shared HTTP client wrapper
+│   ├── error/                     # Failure / Result / exception types, and guard() —
+│   │                               the one catch/map-to-Failure helper every repository uses
+│   ├── network/                   # api_client.dart — shared HTTP client wrapper (auth-only
+│   │                               for now; every other feature is still local-data-only)
 │   ├── routes/                    # go_router config: AppRoute (route names),
 │   │                               app_page.dart (GoRouter + role-based auth redirect),
 │   │                               go_router_refresh_stream.dart (rebuilds router on auth change)
 │   ├── theme/                     # AppColor, AppStyle, Dimensions, ThemeData
+│   ├── utils/                     # small stateless helpers shared across features (e.g. date
+│   │                               formatting) — not a feature's own, not big enough for its own dir
 │   └── widgets/                   # shared widgets (buttons, app bar, dialogs, loaders)
 │
 ├── features/
-│   ├── auth/                      # sign in / sign up / session
-│   │   ├── data/                  #   auth_local_data_source, login/sign-up models, repo impl
+│   ├── auth/                      # welcome screen, sign-in, session
+│   │   ├── data/                  #   auth_local_data_source, login model, repo impl
 │   │   ├── domain/                #   AuthUser entity, AuthRepository contract,
-│   │   │                          #   login/sign-up/logout/check-session usecases
+│   │   │                          #   login/sign-up/logout/check-session/attach-mess usecases
 │   │   ├── presentation/
 │   │   │   ├── bloc/              #   AuthBloc — the one Bloc in the app (long-lived, app-scoped)
-│   │   │   ├── pages/             #   sign_in.dart, sign_up.dart
-│   │   │   └── widgets/           #   shared auth form pieces
+│   │   │   ├── pages/             #   welcome_screen.dart, sign_in.dart, mess_choice_gate.dart
+│   │   │   └── widgets/           #   mess_choice_sheet.dart, user_info_sheet.dart, form fields
+│   │   └── injection_container.dart
+│   │
+│   ├── mess/                      # create/join a mess (invite codes) — the account-less step
+│   │   │                          # that runs before/around sign-up, see "Onboarding flow" below
+│   │   ├── data/  domain/  presentation/cubit
 │   │   └── injection_container.dart
 │   │
 │   ├── dashboard/                 # member home: balance, operations, meal list,
@@ -107,7 +116,8 @@ test/
 ├── features/
 │   ├── auth/login_usecase_test.dart
 │   ├── manager/add_expense_usecase_test.dart
-│   └── members/members_usecases_test.dart
+│   ├── members/members_usecases_test.dart
+│   └── mess/mess_choice_flow_test.dart   # end-to-end: welcome screen through to the dashboard
 └── widget_test.dart                # smoke test: app boots to splash
 ```
 
@@ -116,19 +126,47 @@ test/
 shown in full for `auth` above; they're collapsed here to keep this map
 readable.
 
+## Onboarding flow
+
+A session-less user lands on `WelcomeScreen` (`AppRoute.welcome`), not
+straight on sign-in — the two things they can actually do (create a mess,
+or join one with a pass code) are the first things they see:
+
+1. **Create a Mess** / **Join with a Pass Code** opens a single-purpose
+   bottom sheet (`mess_choice_sheet.dart`) for just that action — a mess
+   name, or an invite code. This runs *before* an account exists.
+2. Once that resolves, a second sheet (`user_info_sheet.dart`) collects
+   just enough to register — name, email, phone, password — and dispatches
+   `SignUpRequested` with the mess already attached, so the account is
+   never left without one.
+3. `AuthBloc` emits `AuthAuthenticated`; the app lands on the dashboard.
+
+`MessChoiceGate` (`AppRoute.messChoice`) is a separate, *locked* variant of
+step 1 — the router redirects an already-authenticated session with no
+`messId` there (e.g. an old account that predates this flow). It attaches
+the mess to the existing session instead of carrying it through sign-up.
+
 ## Routing & access control
 
 Routes are declared as constants in `core/routes/app_route.dart` and wired
 up in `core/routes/app_page.dart`, which also holds `_authRedirect` — a
 single `GoRouter.redirect` that:
-- sends unauthenticated users to `AppRoute.login` for any non-auth route,
-- sends authenticated users away from the login/sign-up routes,
+- sends unauthenticated users to `AppRoute.welcome` for any non-auth route,
+- sends authenticated users away from the welcome/login routes,
+- forces an authenticated-but-mess-less session to `AppRoute.messChoice`,
 - blocks members from manager-only routes (`_managerOnlyRoutes`) even via
   direct/deep-link navigation.
 
 `go_router_refresh_stream.dart` re-evaluates that redirect whenever
 `AuthBloc`'s state changes, so a login/logout immediately reroutes without
-a manual `context.go(...)` call at the call site.
+a manual `context.go(...)` call at the call site — **except** when the
+current location was reached via an imperative `context.push` (as splash's
+push to `/welcome` is) rather than `context.go`: the refresh re-evaluates
+against the last `go`-set location, not the pushed one, so it silently
+no-ops. Every screen that can complete auth from on top of an imperative
+push (e.g. `user_info_sheet.dart`) therefore calls `context.go(AppRoute.dashboard)`
+explicitly on success instead of relying on the redirect alone — keep
+doing that for any new one.
 
 ## State management conventions
 

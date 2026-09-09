@@ -9,10 +9,8 @@ import 'package:mass_management/features/members/presentation/cubit/members_cubi
 
 /// Registers every dependency the members feature needs into [sl].
 ///
-/// This is NOT called anywhere yet — a central `service_locator.dart`
-/// (owned by a different part of this refactor) will call
-/// `initMembersInjection(sl)` once it exists, alongside similar init
-/// functions for other features.
+/// Called from `core/di/service_locator.dart`, alongside the equivalent
+/// init function for every other feature.
 void initMembersInjection(GetIt sl) {
   sl.registerLazySingleton<MembersLocalDataSource>(
     () => MembersLocalDataSourceImpl(),

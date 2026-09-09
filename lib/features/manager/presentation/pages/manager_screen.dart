@@ -78,17 +78,17 @@ class _MessManagerPageState extends State<MessManagerPage> {
         ChartData(
           label: 'Remaining',
           percentage: summary?.remainingPercentage ?? 0,
-          color: Colors.green,
+          color: AppColor.successColor,
         ),
         ChartData(
           label: 'Shared Expense',
           percentage: summary?.sharedExpensePercentage ?? 0,
-          color: Colors.orange,
+          color: AppColor.pendingTextColor,
         ),
         ChartData(
           label: 'Food Expense',
           percentage: summary?.foodExpensePercentage ?? 0,
-          color: Colors.deepPurple,
+          color: AppColor.primaryColor,
         ),
       ],
     );

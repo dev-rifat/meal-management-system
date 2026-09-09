@@ -8,11 +8,8 @@ import 'package:mass_management/features/profile/presentation/cubit/profile_cubi
 
 /// Registers every dependency the profile feature needs into [sl].
 ///
-/// This is NOT called anywhere yet — a central `service_locator.dart`
-/// (owned by a different part of this refactor) will call
-/// `initProfileInjection(sl)` once it exists, alongside similar init
-/// functions for other features (including `initAuthInjection`, which must
-/// run first since [ProfileCubit] depends on auth's [LogoutUseCase]).
+/// Called from `core/di/service_locator.dart`, after `initAuthInjection`
+/// — [ProfileCubit] depends on auth's [LogoutUseCase].
 void initProfileInjection(GetIt sl) {
   sl.registerLazySingleton<ProfileLocalDataSource>(
     () => ProfileLocalDataSourceImpl(),

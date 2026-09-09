@@ -20,6 +20,7 @@ abstract class AuthLocalDataSource {
   AuthUser registerUser({
     required String email,
     required String username,
+    required String phone,
     required String password,
     required UserRole role,
     required String messId,
@@ -90,6 +91,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   AuthUser registerUser({
     required String email,
     required String username,
+    required String phone,
     required String password,
     required UserRole role,
     required String messId,
@@ -109,6 +111,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       token: 'local-session-$email',
       role: role,
       messId: messId,
+      phone: phone,
     );
     _currentUser = user;
     return user;

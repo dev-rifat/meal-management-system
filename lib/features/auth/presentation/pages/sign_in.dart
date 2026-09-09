@@ -9,7 +9,6 @@ import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart'
 import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mass_management/features/auth/presentation/widgets/auth_form.dart'
     show AuthForm, AuthFormState;
-import 'package:mass_management/features/auth/presentation/widgets/mess_choice_sheet.dart';
 import 'package:mass_management/core/theme/app_color.dart';
 import 'package:mass_management/core/constants/app_string.dart';
 import 'package:mass_management/core/theme/app_style.dart';
@@ -107,7 +106,6 @@ class _SignInScreenState extends State<SignInScreen> {
     return titleTextLayout(
       titleText: "Sign in\nto your account",
       subText: "",
-      context: context,
       subTitleText: "Welcome Back You've Been Missed!",
     );
   }
@@ -157,19 +155,12 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Widget _buildNewUserCreate(BuildContext context) {
     return createUserAccount(
-      context: context,
       firstText: "New user? ",
       endText: AppString.textSignUp,
-      onAction: () => _openMessChoicePicker(context),
+      // Create/join a mess lives on the welcome screen now, not behind a
+      // second picker here — send them back to it instead of duplicating
+      // that flow.
+      onAction: () => context.go(AppRoute.welcome),
     );
-  }
-
-  /// "Create a mess" or "join one" is decided first, via a bottom sheet —
-  /// only once that's resolved does the actual sign-up form open, carrying
-  /// the choice along so the account is created already attached to it.
-  Future<void> _openMessChoicePicker(BuildContext context) async {
-    final choice = await pickMessChoice(context);
-    if (choice == null || !context.mounted) return;
-    context.push(AppRoute.signUp, extra: choice);
   }
 }

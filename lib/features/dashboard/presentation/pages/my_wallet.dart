@@ -91,7 +91,7 @@ class _WalletView extends StatelessWidget {
               Text(
                 "৳ ${summary.balance!.toStringAsFixed(2)}",
                 style: const TextStyle(
-                  color: Colors.redAccent,
+                  color: AppColor.errorColor,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -99,7 +99,7 @@ class _WalletView extends StatelessWidget {
               Text(
                 summary.mealRate!.toStringAsFixed(2),
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColor.cardColor,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -133,8 +133,8 @@ class _WalletView extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 16,
-          backgroundColor: Colors.green.withValues(alpha: 0.2),
-          child: Icon(icon, size: 18, color: Colors.green),
+          backgroundColor: AppColor.successColor.withValues(alpha: 0.2),
+          child: Icon(icon, size: 18, color: AppColor.successColor),
         ),
         const SizedBox(width: 8),
         Column(

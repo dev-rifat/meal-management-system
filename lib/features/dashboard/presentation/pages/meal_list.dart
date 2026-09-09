@@ -233,6 +233,9 @@ class _MealDetailsView extends StatelessWidget {
 }
 
 /// ✅ Meal Card Widget
+/// One day's meal totals, with an approve/reject/pending status pill —
+/// [canModerate] gates whether [onStatusChange] is actually reachable
+/// (managers only; members see the same card read-only).
 class MealCard extends StatelessWidget {
   final DateTime date;
   final Size size;
@@ -261,11 +264,11 @@ class MealCard extends StatelessWidget {
   Color _getStatusColor(MealStatus status) {
     switch (status) {
       case MealStatus.approved:
-        return Colors.green;
+        return AppColor.successColor;
       case MealStatus.rejected:
-        return Colors.red;
+        return AppColor.errorColor;
       case MealStatus.pending:
-        return Colors.orange;
+        return AppColor.pendingTextColor;
     }
   }
 

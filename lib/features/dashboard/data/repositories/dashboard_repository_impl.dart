@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart' show DateTimeRange;
-import 'package:mass_management/core/error/exceptions.dart';
-import 'package:mass_management/core/error/failure.dart';
 import 'package:mass_management/core/error/result.dart';
 import 'package:mass_management/features/dashboard/data/datasources/dashboard_local_data_source.dart';
 import 'package:mass_management/features/dashboard/domain/entities/balance_summary.dart';
@@ -18,62 +16,36 @@ class DashboardRepositoryImpl implements DashboardRepository {
   const DashboardRepositoryImpl(this.localDataSource);
 
   @override
-  Future<Result<List<BalanceSummary>>> getBalanceSummaries() async {
-    try {
-      return ResultSuccess(localDataSource.getBalanceSummaries());
-    } on ServerException catch (e) {
-      return ResultError(ServerFailure(e.message));
-    }
-  }
+  Future<Result<List<BalanceSummary>>> getBalanceSummaries() =>
+      guard(() async => localDataSource.getBalanceSummaries());
 
   @override
-  Future<Result<BalanceSummary>> getWalletSummary() async {
-    try {
-      return ResultSuccess(localDataSource.getWalletSummary());
-    } on ServerException catch (e) {
-      return ResultError(ServerFailure(e.message));
-    }
-  }
+  Future<Result<BalanceSummary>> getWalletSummary() =>
+      guard(() async => localDataSource.getWalletSummary());
 
   @override
-  Future<Result<List<Transaction>>> getTransactions() async {
-    try {
-      return ResultSuccess(localDataSource.getTransactions());
-    } on ServerException catch (e) {
-      return ResultError(ServerFailure(e.message));
-    }
-  }
+  Future<Result<List<Transaction>>> getTransactions() =>
+      guard(() async => localDataSource.getTransactions());
 
   @override
   Future<Result<List<MealRecord>>> getMealsForMonth({
     required DateTime month,
     MealStatus? status,
-  }) async {
-    try {
-      return ResultSuccess(localDataSource.getMealsForMonth(month: month, status: status));
-    } on ServerException catch (e) {
-      return ResultError(ServerFailure(e.message));
-    }
-  }
+  }) => guard(
+    () async => localDataSource.getMealsForMonth(month: month, status: status),
+  );
 
   @override
   Future<Result<MealRecord>> updateMealStatus({
     required String id,
     required MealStatus status,
-  }) async {
-    try {
-      return ResultSuccess(localDataSource.updateMealStatus(id: id, status: status));
-    } on NotFoundException catch (e) {
-      return ResultError(NotFoundFailure(e.message));
-    }
-  }
+  }) => guard(
+    () async => localDataSource.updateMealStatus(id: id, status: status),
+  );
 
   @override
-  Future<Result<MonthlySummaryResult>> getMonthlySummary({DateTimeRange? range}) async {
-    try {
-      return ResultSuccess(localDataSource.getMonthlySummary(monthAnchor: range?.start));
-    } on ServerException catch (e) {
-      return ResultError(ServerFailure(e.message));
-    }
-  }
+  Future<Result<MonthlySummaryResult>> getMonthlySummary({DateTimeRange? range}) =>
+      guard(
+        () async => localDataSource.getMonthlySummary(monthAnchor: range?.start),
+      );
 }

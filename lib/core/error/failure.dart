@@ -1,3 +1,6 @@
+/// What a repository maps an [Exception] to before it reaches the
+/// domain/presentation layers — see `exceptions.dart` for the source side
+/// of that mapping.
 sealed class Failure {
   final String message;
 
@@ -14,10 +17,6 @@ final class NetworkFailure extends Failure {
 
 final class NotFoundFailure extends Failure {
   const NotFoundFailure([super.message = 'Requested data was not found.']);
-}
-
-final class ValidationFailure extends Failure {
-  const ValidationFailure(super.message);
 }
 
 final class UnauthenticatedFailure extends Failure {

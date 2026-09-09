@@ -13,6 +13,7 @@ abstract class AuthRepository {
   Future<Result<AuthUser>> signUp({
     required String email,
     required String username,
+    required String phone,
     required String password,
     required UserRole role,
     required String messId,

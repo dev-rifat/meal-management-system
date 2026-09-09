@@ -8,6 +8,7 @@ import 'package:mass_management/features/auth/domain/repositories/auth_repositor
 class SignUpParams extends Equatable {
   final String email;
   final String username;
+  final String phone;
   final String password;
   final UserRole role;
   final String messId;
@@ -15,13 +16,14 @@ class SignUpParams extends Equatable {
   const SignUpParams({
     required this.email,
     required this.username,
+    required this.phone,
     required this.password,
     required this.role,
     required this.messId,
   });
 
   @override
-  List<Object?> get props => [email, username, password, role, messId];
+  List<Object?> get props => [email, username, phone, password, role, messId];
 }
 
 class SignUpUseCase implements UseCase<AuthUser, SignUpParams> {
@@ -34,6 +36,7 @@ class SignUpUseCase implements UseCase<AuthUser, SignUpParams> {
     return repository.signUp(
       email: params.email,
       username: params.username,
+      phone: params.phone,
       password: params.password,
       role: params.role,
       messId: params.messId,

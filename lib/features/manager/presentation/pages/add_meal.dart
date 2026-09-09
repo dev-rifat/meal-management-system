@@ -325,17 +325,17 @@ class _AddMealState extends State<AddMeal> {
                           Expanded(
                             child: Text(
                               meal,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.black,
+                                color: AppColor.normalTextColor,
                               ),
                             ),
                           ),
                           IconButton(
                             onPressed: () => _changeMealCount(meal, -0.5),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.remove_circle,
-                              color: Colors.red,
+                              color: AppColor.errorColor,
                               size: 28,
                             ),
                           ),
@@ -350,9 +350,9 @@ class _AddMealState extends State<AddMeal> {
                           ),
                           IconButton(
                             onPressed: () => _changeMealCount(meal, 0.5),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.add_circle,
-                              color: Colors.green,
+                              color: AppColor.successColor,
                               size: 28,
                             ),
                           ),

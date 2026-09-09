@@ -1,4 +1,3 @@
-// lib/core/routes/app_router.dart
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -10,10 +9,7 @@ import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mass_management/features/auth/presentation/pages/mess_choice_gate.dart';
 import 'package:mass_management/features/auth/presentation/pages/sign_in.dart';
-import 'package:mass_management/features/auth/presentation/pages/sign_up.dart'
-    show SignupPage;
-import 'package:mass_management/features/auth/presentation/widgets/mess_choice_sheet.dart'
-    show MessChoiceResult;
+import 'package:mass_management/features/auth/presentation/pages/welcome_screen.dart';
 import 'package:mass_management/features/dashboard/presentation/pages/meal_list.dart'
     show MealDetailsPage;
 import 'package:mass_management/features/dashboard/presentation/pages/monthly_summary.dart';
@@ -45,11 +41,12 @@ const Set<String> _managerOnlyRoutes = {
 
 String? _authRedirect(AuthBloc authBloc, GoRouterState state) {
   final location = state.matchedLocation;
-  if (location == AppRoute.splash)
+  if (location == AppRoute.splash) {
     return null; // SplashScreen owns its own transition
+  }
 
   final authState = authBloc.state;
-  final isAuthRoute = location == AppRoute.login || location == AppRoute.signUp;
+  final isAuthRoute = location == AppRoute.welcome || location == AppRoute.login;
 
   if (authState is AuthAuthenticated) {
     // No mess yet — force the create/join gate regardless of where they
@@ -61,12 +58,13 @@ String? _authRedirect(AuthBloc authBloc, GoRouterState state) {
       return AppRoute.dashboard;
     }
     final isMember = authState.user.role == UserRole.member;
-    if (isMember && _managerOnlyRoutes.contains(location))
+    if (isMember && _managerOnlyRoutes.contains(location)) {
       return AppRoute.dashboard;
+    }
     return null;
   }
   if (authState is AuthUnauthenticated) {
-    return isAuthRoute ? null : AppRoute.login;
+    return isAuthRoute ? null : AppRoute.welcome;
   }
   // AuthInitial/AuthLoading/AuthError: transitional, don't fight in-flight navigation.
   return null;
@@ -86,6 +84,11 @@ GoRouter buildAppRouter(AuthBloc authBloc) => GoRouter(
         create: (_) => sl<SplashCubit>(),
         child: const SplashScreen(),
       ),
+    ),
+    GoRoute(
+      path: '/welcome',
+      name: AppRoute.welcome,
+      builder: (_, __) => const WelcomeScreen(),
     ),
     GoRoute(
       path: '/sign_in',
@@ -140,12 +143,6 @@ GoRouter buildAppRouter(AuthBloc authBloc) => GoRouter(
         create: (_) => sl<ExpenseListCubit>(),
         child: const ExpenseListScreen(),
       ),
-    ),
-    GoRoute(
-      path: '/signup_screen',
-      name: AppRoute.signUp,
-      builder: (_, state) =>
-          SignupPage(messChoice: state.extra as MessChoiceResult),
     ),
     GoRoute(
       path: '/mess_choice',

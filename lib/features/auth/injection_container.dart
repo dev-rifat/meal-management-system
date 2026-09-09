@@ -13,10 +13,8 @@ import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
 
 /// Registers every dependency the auth feature needs into [sl].
 ///
-/// This is NOT called anywhere yet — a central `service_locator.dart`
-/// (owned by a different part of this refactor) will call
-/// `initAuthInjection(sl)` once it exists, alongside similar init functions
-/// for other features.
+/// Called from `core/di/service_locator.dart`, alongside the equivalent
+/// init function for every other feature.
 void initAuthInjection(GetIt sl) {
   // Shared across features — only register it here if nobody has yet.
   if (!sl.isRegistered<ApiClient>()) {

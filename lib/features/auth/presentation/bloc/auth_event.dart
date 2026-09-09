@@ -21,6 +21,7 @@ class LoginRequested extends AuthEvent {
 class SignUpRequested extends AuthEvent {
   final String email;
   final String username;
+  final String phone;
   final String password;
   final UserRole role;
   final String messId;
@@ -28,13 +29,14 @@ class SignUpRequested extends AuthEvent {
   const SignUpRequested({
     required this.email,
     required this.username,
+    required this.phone,
     required this.password,
     required this.role,
     required this.messId,
   });
 
   @override
-  List<Object?> get props => [email, username, password, role, messId];
+  List<Object?> get props => [email, username, phone, password, role, messId];
 }
 
 /// Attaches a mess to an already-authenticated session that somehow has

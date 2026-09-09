@@ -5,6 +5,7 @@ import 'package:mass_management/core/widgets/app_input_field.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/core/widgets/success_message.dart';
+import 'package:mass_management/core/utils/date_formatter.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_share_expense_cubit.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_share_expense_state.dart';
 import 'package:mass_management/core/theme/app_color.dart';
@@ -29,7 +30,7 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    _dateController.text = _formatDate(_selectedDate);
+    _dateController.text = formatDateYmd(_selectedDate);
     context.read<AddShareExpenseCubit>().loadInitialData();
   }
 
@@ -41,9 +42,6 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
     super.dispose();
   }
 
-  String _formatDate(DateTime date) =>
-      "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-
   Future<void> _pickDate() async {
     DateTime? date = await showDatePicker(
       context: context,
@@ -54,7 +52,7 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
     if (date != null) {
       setState(() {
         _selectedDate = date;
-        _dateController.text = _formatDate(date);
+        _dateController.text = formatDateYmd(date);
       });
     }
   }
@@ -201,11 +199,11 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
                   onPressed: _addCustomBillType,
                   icon: const Icon(
                     Icons.add_circle_outline,
-                    color: Colors.blue,
+                    color: AppColor.primaryColor,
                   ),
                   label: const Text(
                     "Add Custom Bill Type",
-                    style: TextStyle(color: Colors.blue),
+                    style: TextStyle(color: AppColor.primaryColor),
                   ),
                 ),
               ),

@@ -67,7 +67,10 @@ Widget userNameField(TextEditingController controller) {
   );
 }
 
-Widget userPhoneNumberField(TextEditingController controller) {
+Widget userPhoneNumberField(
+  TextEditingController controller, {
+  String? Function(String?)? validator,
+}) {
   return CustomInputField(
     hintText: AppString.textEnterPhoneNumber,
     controller: controller,
@@ -83,6 +86,7 @@ Widget userPhoneNumberField(TextEditingController controller) {
       color: AppColor.hintColor,
       fontSize: Dimensions.fontSizeDefault + 1,
     ),
+    validator: validator,
   );
 }
 
@@ -115,12 +119,15 @@ Widget userPasswordField({
   );
 }
 
+/// [controller] backs this field's own text; [passwordController] is only
+/// read (never bound) to check the two match.
 Widget userConfirmPasswordField({
   String? hintText,
-  required TextEditingController pasController,
+  required TextEditingController controller,
+  required TextEditingController passwordController,
 }) {
   return PasswordInputField(
-    controller: pasController,
+    controller: controller,
     borderColor: Colors.transparent,
     hintStyle: AppStyle.normalText.copyWith(
       color: AppColor.hintColor,
@@ -128,7 +135,7 @@ Widget userConfirmPasswordField({
     ),
     hintText: hintText ?? "Enter confirm password",
     validator: (value) {
-      final password = pasController.text.trim();
+      final password = passwordController.text.trim();
       final confirmPassword = value?.trim() ?? '';
 
       if (confirmPassword.isEmpty) {
