@@ -1,0 +1,35 @@
+### App-specific data for a person within a mess. Serverpod's built-in
+### AuthUser/UserProfile (serverpod_auth_core) already own identity
+### (email/password) and basic profile (name); this model holds only what
+### this app adds on top — phone, role, mess membership, payment status —
+### and links back to that AuthUser by id.
+class: MessMember
+table: mess_member
+
+fields:
+  ### The Serverpod AuthUser id this member is signed in as.
+  authUserId: UuidValue
+
+  ### The mess this member belongs to.
+  mess: Mess?, relation(onDelete=Cascade)
+
+  role: MessMemberRole, default=member
+
+  phone: String
+
+  paymentStatus: MessMemberPaymentStatus, default=due
+
+  paymentDate: DateTime?
+
+  joiningDate: DateTime, default=now
+
+  emergencyContact: String?
+
+  birthday: DateTime?
+
+indexes:
+  ### One membership row per auth user — a person belongs to exactly one
+  ### mess, matching the app's current create/join-at-signup flow.
+  mess_member_auth_user_id_idx:
+    fields: authUserId
+    unique: true

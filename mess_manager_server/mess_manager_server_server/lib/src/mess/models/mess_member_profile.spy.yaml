@@ -1,0 +1,16 @@
+### A member row for the Flutter app's member list — combines [MessMember]
+### (this app's own fields) with Serverpod's built-in [UserProfile]
+### (name/email), since the client needs both together. Not a table — a
+### transfer object built by `MessEndpoint.members`.
+class: MessMemberProfile
+fields:
+  id: int
+  authUserId: UuidValue
+  name: String
+  email: String
+  phone: String
+  role: MessMemberRole
+  paymentStatus: MessMemberPaymentStatus
+  paymentDate: DateTime?
+  joiningDate: DateTime
+  profileImageUrl: String?

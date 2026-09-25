@@ -1,24 +1,22 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mass_management/core/usecase/usecase.dart';
 import 'package:mass_management/features/manager/domain/usecases/add_expense.dart';
-import 'package:mass_management/features/manager/domain/usecases/get_members_for_dropdown.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_expense_state.dart';
+import 'package:mass_management/features/members/domain/usecases/get_members.dart';
 
-/// Backs [AddExpenseScreen] — loads this feature's own seeded member list
-/// for the "Spent By" dropdown and wires the submit button to a real
-/// [AddExpense] use case instead of a debugPrint-only no-op.
+/// Backs [AddExpenseScreen] — loads the mess's real member list for the
+/// "Spent By" dropdown and submits through [AddExpense].
 class AddExpenseCubit extends Cubit<AddExpenseState> {
   final AddExpense addExpense;
-  final GetMembersForDropdown getMembersForDropdown;
+  final GetMembers getMembers;
 
   AddExpenseCubit({
     required this.addExpense,
-    required this.getMembersForDropdown,
+    required this.getMembers,
   }) : super(const AddExpenseState());
 
   Future<void> loadMembers() async {
     emit(state.copyWith(status: AddExpenseStatus.loadingMembers));
-    final result = await getMembersForDropdown(const NoParams());
+    final result = await getMembers(const GetMembersParams());
     result.fold(
       (failure) => emit(state.copyWith(
         status: AddExpenseStatus.error,
@@ -36,7 +34,7 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
     required double amount,
     required DateTime date,
     required String details,
-    required String spentBy,
+    required String spentByMemberId,
   }) async {
     emit(state.copyWith(status: AddExpenseStatus.submitting));
     final result = await addExpense(AddExpenseParams(
@@ -44,7 +42,7 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
       amount: amount,
       date: date,
       details: details,
-      spentBy: spentBy,
+      spentByMemberId: spentByMemberId,
     ));
     result.fold(
       (failure) => emit(state.copyWith(

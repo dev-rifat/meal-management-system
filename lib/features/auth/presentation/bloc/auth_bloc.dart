@@ -1,30 +1,26 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mass_management/core/usecase/usecase.dart';
-import 'package:mass_management/features/auth/domain/usecases/attach_mess_usecase.dart';
 import 'package:mass_management/features/auth/domain/usecases/check_session_usecase.dart';
+import 'package:mass_management/features/auth/domain/usecases/finish_registration_usecase.dart';
 import 'package:mass_management/features/auth/domain/usecases/login_usecase.dart';
 import 'package:mass_management/features/auth/domain/usecases/logout_usecase.dart';
-import 'package:mass_management/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUseCase loginUseCase;
-  final SignUpUseCase signUpUseCase;
+  final FinishRegistrationUseCase finishRegistrationUseCase;
   final LogoutUseCase logoutUseCase;
   final CheckSessionUseCase checkSessionUseCase;
-  final AttachMessUseCase attachMessUseCase;
 
   AuthBloc({
     required this.loginUseCase,
-    required this.signUpUseCase,
+    required this.finishRegistrationUseCase,
     required this.logoutUseCase,
     required this.checkSessionUseCase,
-    required this.attachMessUseCase,
   }) : super(const AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
-    on<SignUpRequested>(_onSignUpRequested);
-    on<AttachMessRequested>(_onAttachMessRequested);
+    on<FinishRegistrationRequested>(_onFinishRegistrationRequested);
     on<LogoutRequested>(_onLogoutRequested);
     on<CheckSessionRequested>(_onCheckSessionRequested);
   }
@@ -43,34 +39,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onSignUpRequested(
-    SignUpRequested event,
+  Future<void> _onFinishRegistrationRequested(
+    FinishRegistrationRequested event,
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
-    final result = await signUpUseCase(
-      SignUpParams(
-        email: event.email,
-        username: event.username,
-        phone: event.phone,
+    final result = await finishRegistrationUseCase(
+      FinishRegistrationParams(
+        registrationToken: event.registrationToken,
         password: event.password,
-        role: event.role,
-        messId: event.messId,
+        fullName: event.fullName,
       ),
-    );
-    result.fold(
-      (failure) => emit(AuthError(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
-    );
-  }
-
-  Future<void> _onAttachMessRequested(
-    AttachMessRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(const AuthLoading());
-    final result = await attachMessUseCase(
-      AttachMessParams(messId: event.messId, role: event.role),
     );
     result.fold(
       (failure) => emit(AuthError(failure.message)),
@@ -89,6 +68,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
+  /// Also used to refresh the current user after `MessCubit` attaches a
+  /// mess (create/join) — that call doesn't itself update `AuthBloc`'s
+  /// state, so the caller re-fires this afterward to pick up the new
+  /// `messId` (see `mess_choice_sheet.dart`/`user_info_sheet.dart`).
   Future<void> _onCheckSessionRequested(
     CheckSessionRequested event,
     Emitter<AuthState> emit,

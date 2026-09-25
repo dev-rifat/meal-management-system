@@ -11,6 +11,10 @@ import 'package:mass_management/features/manager/presentation/cubit/add_expense_
 import 'package:mass_management/features/manager/presentation/cubit/add_expense_state.dart';
 import 'package:mass_management/core/theme/app_color.dart';
 
+/// Placeholder value in the "Spent By" dropdown meaning "nothing selected
+/// yet".
+const String _selectMemberPlaceholder = "Select Member";
+
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
 
@@ -23,7 +27,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _priceController = TextEditingController();
   final _detailsController = TextEditingController();
   final _dateController = TextEditingController();
-  String? _selectedMember;
+  String? _selectedMemberId;
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -169,7 +173,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       buildWhen: (previous, current) => previous.members != current.members,
       builder: (context, state) {
         return DropdownButtonFormField2(
-          value: _selectedMember,
+          value: _selectedMemberId,
           decoration: InputDecoration(
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
             enabledBorder: OutlineInputBorder(
@@ -184,7 +188,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           hint: const Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              "Select Member",
+              _selectMemberPlaceholder,
               style: TextStyle(color: Colors.black54),
             ),
           ),
@@ -192,13 +196,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           isExpanded: true,
           items: state.members
               .map(
-                (member) =>
-                    DropdownMenuItem(value: member, child: Text(member)),
+                (member) => DropdownMenuItem(
+                  value: member.id,
+                  child: Text(member.name),
+                ),
               )
               .toList(),
           onChanged: (val) {
             setState(() {
-              _selectedMember = val;
+              _selectedMemberId = val;
             });
           },
         );
@@ -210,7 +216,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final amount = double.tryParse(_priceController.text.trim());
     if (_titleController.text.trim().isEmpty ||
         amount == null ||
-        _selectedMember == null) {
+        _selectedMemberId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Please fill in title, price and spent by."),
@@ -224,7 +230,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       amount: amount,
       date: _selectedDate,
       details: _detailsController.text.trim(),
-      spentBy: _selectedMember!,
+      spentByMemberId: _selectedMemberId!,
     );
   }
 }

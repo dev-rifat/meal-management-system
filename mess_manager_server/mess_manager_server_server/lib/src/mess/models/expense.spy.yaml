@@ -1,0 +1,16 @@
+### A market or shared expense, attributed to whichever member a manager
+### recorded it against (`member`) — not necessarily the manager
+### themself. [billType] is only ever set for `type == share`.
+class: Expense
+table: expense
+
+fields:
+  mess: Mess?, relation(onDelete=Cascade)
+  member: MessMember?, relation(onDelete=Cascade)
+  title: String
+  amount: double
+  type: ExpenseType
+  date: DateTime
+  details: String
+  billType: BillType?, relation(onDelete=SetNull, optional)
+  createdAt: DateTime, default=now

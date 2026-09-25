@@ -1,0 +1,5 @@
+enum: MessMemberPaymentStatus
+serialized: byName
+values:
+  - due
+  - clear

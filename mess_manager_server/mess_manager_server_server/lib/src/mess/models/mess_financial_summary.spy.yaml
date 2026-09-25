@@ -1,0 +1,8 @@
+### The whole mess's deposits/food-expense/meal-rate for a given month —
+### the dashboard's mess-wide balance card. Not a table — built by
+### `DashboardEndpoint.getMessSummary`.
+class: MessFinancialSummary
+fields:
+  deposit: double
+  expense: double
+  mealRate: double

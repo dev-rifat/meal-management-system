@@ -24,9 +24,20 @@ abstract class DashboardRepository {
     MealStatus? status,
   });
 
-  Future<Result<MealRecord>> updateMealStatus({
-    required String id,
+  /// Updates every one of [entryIds] to [status] — a whole [MealRecord]
+  /// row's worth of underlying server entries, approved/rejected together.
+  Future<Result<void>> updateMealStatus({
+    required List<String> entryIds,
     required MealStatus status,
+  });
+
+  /// Submits (or overwrites) [memberId]'s meal counts for [date] — the
+  /// manager's "Add Meal" screen and a member's own self-submission both
+  /// go through this (see `manager/presentation/pages/add_meal.dart`).
+  Future<Result<void>> submitMeal({
+    required String memberId,
+    required DateTime date,
+    required Map<String, double> mealCounts,
   });
 
   /// `range == null` means "the current month". Otherwise `range.start`

@@ -1,0 +1,12 @@
+### A deposit a member has paid into the mess — the credit side of their
+### balance (their [Expense] rows are the debit side). Recorded by a
+### manager, e.g. after collecting cash from a member.
+class: Payment
+table: payment
+
+fields:
+  mess: Mess?, relation(onDelete=Cascade)
+  member: MessMember?, relation(onDelete=Cascade)
+  amount: double
+  date: DateTime
+  createdAt: DateTime, default=now

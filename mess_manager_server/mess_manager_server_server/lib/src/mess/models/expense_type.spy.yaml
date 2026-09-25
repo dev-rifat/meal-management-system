@@ -1,0 +1,5 @@
+enum: ExpenseType
+serialized: byName
+values:
+  - market
+  - share

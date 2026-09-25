@@ -35,9 +35,9 @@ class MealListCubit extends Cubit<MealListState> {
     return _fetch();
   }
 
-  Future<void> updateStatus(String id, MealStatus status) async {
+  Future<void> updateStatus(List<String> entryIds, MealStatus status) async {
     final result = await updateMealStatusUseCase(
-      UpdateMealStatusParams(id: id, status: status),
+      UpdateMealStatusParams(entryIds: entryIds, status: status),
     );
     result.fold(
       (failure) {

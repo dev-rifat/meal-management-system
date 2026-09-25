@@ -6,11 +6,12 @@ import 'package:mass_management/features/mess/domain/repositories/mess_repositor
 
 class JoinMessParams extends Equatable {
   final String inviteCode;
+  final String phone;
 
-  const JoinMessParams(this.inviteCode);
+  const JoinMessParams({required this.inviteCode, required this.phone});
 
   @override
-  List<Object?> get props => [inviteCode];
+  List<Object?> get props => [inviteCode, phone];
 }
 
 class JoinMess implements UseCase<Mess, JoinMessParams> {
@@ -20,6 +21,9 @@ class JoinMess implements UseCase<Mess, JoinMessParams> {
 
   @override
   Future<Result<Mess>> call(JoinMessParams params) {
-    return repository.joinMess(inviteCode: params.inviteCode);
+    return repository.joinMess(
+      inviteCode: params.inviteCode,
+      phone: params.phone,
+    );
   }
 }

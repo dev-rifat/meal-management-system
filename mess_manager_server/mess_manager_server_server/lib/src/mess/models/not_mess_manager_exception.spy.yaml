@@ -1,0 +1,3 @@
+### Thrown when a non-manager calls a manager-only `MessEndpoint` method
+### (e.g. updating another member's payment status, or removing a member).
+exception: NotMessManagerException

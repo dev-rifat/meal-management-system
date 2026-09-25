@@ -193,6 +193,8 @@ class _MealDetailsView extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final meal = meals[index];
                     return MealCard(
+                      key: ValueKey(meal.id),
+                      memberName: meal.memberName,
                       date: meal.date,
                       size: size,
                       iconSize: iconSize,
@@ -206,7 +208,7 @@ class _MealDetailsView extends StatelessWidget {
                       canModerate: canModerate,
                       onStatusChange: (newStatus) {
                         context.read<MealListCubit>().updateStatus(
-                          meal.id,
+                          meal.entryIds,
                           newStatus,
                         );
                       },
@@ -233,10 +235,12 @@ class _MealDetailsView extends StatelessWidget {
 }
 
 /// ✅ Meal Card Widget
-/// One day's meal totals, with an approve/reject/pending status pill —
-/// [canModerate] gates whether [onStatusChange] is actually reachable
-/// (managers only; members see the same card read-only).
+/// One member's one-day meal totals, with an approve/reject/pending status
+/// pill covering all of that day's entries together — [canModerate] gates
+/// whether [onStatusChange] is actually reachable (managers only; members
+/// see the same card read-only).
 class MealCard extends StatelessWidget {
+  final String memberName;
   final DateTime date;
   final Size size;
   final double iconSize, fontSizeTitle, fontSizeValue;
@@ -247,6 +251,7 @@ class MealCard extends StatelessWidget {
 
   const MealCard({
     super.key,
+    required this.memberName,
     required this.date,
     required this.size,
     required this.iconSize,
@@ -304,6 +309,14 @@ class MealCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      memberName,
+                      style: AppStyle.normalText.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSizeTitle + 1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

@@ -1,146 +1,202 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mass_management/core/di/service_locator.dart';
-import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/theme/app_color.dart';
 import 'package:mass_management/core/theme/app_style.dart';
 import 'package:mass_management/core/theme/dimensions.dart';
 import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mass_management/features/auth/presentation/bloc/auth_event.dart';
-import 'package:mass_management/features/mess/domain/entities/mess.dart';
 import 'package:mass_management/features/mess/presentation/cubit/mess_cubit.dart';
 import 'package:mass_management/features/mess/presentation/cubit/mess_state.dart';
 
-/// A resolved "Create New Mess" / "Join a Mess" choice, handed back by
-/// [pickMessChoice] so the caller can carry it into sign-up.
-class MessChoiceResult {
-  final String messId;
-  final UserRole role;
+/// A mess name or invite code, captured *before* an account exists — the
+/// actual create/join call happens later, once the account is
+/// authenticated (`MessEndpoint.create`/`join` require login), via
+/// `MessCubit` from `user_info_sheet.dart`.
+class PendingMessChoice {
+  final bool isCreate;
+  final String value;
 
-  const MessChoiceResult({required this.messId, required this.role});
+  const PendingMessChoice({required this.isCreate, required this.value});
 }
 
-/// Opens the create/join choice as a dismissible bottom sheet *before* an
-/// account exists — used from the welcome screen's "Create a Mess" /
-/// "Join with a Pass Code" buttons. [initiallyCreate] preselects the mode
-/// matching whichever button was tapped; [allowModeSwitch] hides the
-/// create/join toggle so the sheet only shows the field for that one
-/// action (the generic entry point still gets the switchable toggle via
-/// [showMessChoiceSheet]). Resolves to `null` if the user backs out
-/// without choosing.
-Future<MessChoiceResult?> pickMessChoice(
+/// Opens a single-purpose, dismissible bottom sheet that just captures a
+/// mess name or invite code — no API call yet. [isCreate] matches whichever
+/// welcome-screen button was tapped. Resolves to `null` if the user backs
+/// out without entering anything.
+Future<PendingMessChoice?> pickMessChoice(
   BuildContext context, {
-  bool initiallyCreate = true,
-  bool allowModeSwitch = true,
+  required bool isCreate,
 }) {
-  return _openSheet<MessChoiceResult>(
-    context,
-    locked: false,
-    initiallyCreate: initiallyCreate,
-    allowModeSwitch: allowModeSwitch,
-    onChosen: (sheetContext, mess, role) {
-      Navigator.pop(
-        sheetContext,
-        MessChoiceResult(messId: mess.id, role: role),
-      );
-    },
+  return showModalBottomSheet<PendingMessChoice>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: AppColor.backgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) => _PendingMessChoiceSheet(isCreate: isCreate),
   );
+}
+
+class _PendingMessChoiceSheet extends StatefulWidget {
+  final bool isCreate;
+
+  const _PendingMessChoiceSheet({required this.isCreate});
+
+  @override
+  State<_PendingMessChoiceSheet> createState() =>
+      _PendingMessChoiceSheetState();
+}
+
+class _PendingMessChoiceSheetState extends State<_PendingMessChoiceSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    Navigator.pop(
+      context,
+      PendingMessChoice(
+        isCreate: widget.isCreate,
+        value: _controller.text.trim(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: 16 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppColor.hintColor.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text(
+                widget.isCreate ? 'Create a new mess' : 'Join with a pass code',
+                style: AppStyle.titleText.copyWith(
+                  fontSize: Dimensions.fontSizeMid,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                key: ValueKey(widget.isCreate ? 'mess-name' : 'invite-code'),
+                controller: _controller,
+                textCapitalization: widget.isCreate
+                    ? TextCapitalization.words
+                    : TextCapitalization.characters,
+                decoration: InputDecoration(
+                  labelText: widget.isCreate ? 'Mess name' : 'Invite code',
+                  hintText: widget.isCreate
+                      ? 'e.g. Sunshine Mess'
+                      : 'Enter the code your manager shared',
+                ),
+                validator: (value) => (value == null || value.trim().isEmpty)
+                    ? (widget.isCreate
+                          ? 'Please enter a mess name'
+                          : 'Please enter the invite code')
+                    : null,
+              ),
+              const SizedBox(height: 24),
+              CustomAppButton(
+                text: 'Continue',
+                buttonColor: AppColor.primaryColor,
+                buttonRadius: Dimensions.radiusDefault,
+                onPressed: _submit,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Opens the create/join choice as a non-dismissible bottom sheet for an
-/// *already-authenticated* session that has no mess yet (e.g. an old demo
-/// account that predates this feature) — attaches the result directly via
-/// [AttachMessRequested] since there's no sign-up step left to carry it
-/// through.
+/// *already-authenticated* session that has no mess yet — e.g. an old
+/// account that predates the current welcome-screen-first sign-up flow.
+/// Unlike [pickMessChoice], this one calls `MessCubit` immediately (an
+/// account already exists), then refreshes `AuthBloc`'s current user so the
+/// router's redirect picks up the new `messId` — create/join itself
+/// doesn't touch auth state.
 Future<void> showMessChoiceSheet(BuildContext context) {
-  return _openSheet<void>(
-    context,
-    locked: true,
-    onChosen: (sheetContext, mess, role) {
-      sheetContext.read<AuthBloc>().add(
-        AttachMessRequested(messId: mess.id, role: role),
-      );
-      Navigator.pop(sheetContext);
-    },
-  );
-}
-
-Future<T?> _openSheet<T>(
-  BuildContext context, {
-  required bool locked,
-  bool initiallyCreate = true,
-  bool allowModeSwitch = true,
-  required MessChosen onChosen,
-}) {
-  return showModalBottomSheet<T>(
+  return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    isDismissible: !locked,
-    enableDrag: !locked,
+    isDismissible: false,
+    enableDrag: false,
     backgroundColor: AppColor.backgroundColor,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
     builder: (sheetContext) => BlocProvider(
       create: (_) => sl<MessCubit>(),
-      child: MessChoiceSheet(
-        locked: locked,
-        initiallyCreate: initiallyCreate,
-        allowModeSwitch: allowModeSwitch,
-        onChosen: onChosen,
-      ),
+      child: const _MessChoiceGateSheet(),
     ),
   );
 }
 
-typedef MessChosen =
-    void Function(BuildContext context, Mess mess, UserRole role);
-
-class MessChoiceSheet extends StatefulWidget {
-  final bool locked;
-  final bool initiallyCreate;
-  final bool allowModeSwitch;
-  final MessChosen onChosen;
-
-  const MessChoiceSheet({
-    super.key,
-    required this.locked,
-    this.initiallyCreate = true,
-    this.allowModeSwitch = true,
-    required this.onChosen,
-  });
+class _MessChoiceGateSheet extends StatefulWidget {
+  const _MessChoiceGateSheet();
 
   @override
-  State<MessChoiceSheet> createState() => _MessChoiceSheetState();
+  State<_MessChoiceGateSheet> createState() => _MessChoiceGateSheetState();
 }
 
-class _MessChoiceSheetState extends State<MessChoiceSheet> {
-  late bool _isCreateMode = widget.initiallyCreate;
+class _MessChoiceGateSheetState extends State<_MessChoiceGateSheet> {
+  bool _isCreateMode = true;
   final _formKey = GlobalKey<FormState>();
   final _messNameController = TextEditingController();
   final _inviteCodeController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   @override
   void dispose() {
     _messNameController.dispose();
     _inviteCodeController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final cubit = context.read<MessCubit>();
+    final phone = _phoneController.text.trim();
     if (_isCreateMode) {
-      cubit.createMess(_messNameController.text.trim());
+      cubit.createMess(_messNameController.text.trim(), phone);
     } else {
-      cubit.joinMess(_inviteCodeController.text.trim());
+      cubit.joinMess(_inviteCodeController.text.trim(), phone);
     }
   }
 
   Future<void> _handleReady(MessReady state) async {
-    final createdNow = _isCreateMode;
-    if (createdNow) {
+    if (_isCreateMode) {
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
@@ -174,20 +230,15 @@ class _MessChoiceSheetState extends State<MessChoiceSheet> {
       );
     }
     if (!mounted) return;
-    widget.onChosen(
-      context,
-      state.mess,
-      createdNow ? UserRole.manager : UserRole.member,
-    );
+    context.read<AuthBloc>().add(const CheckSessionRequested());
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      // Locked (post-auth gate): not skippable — the account isn't usable
-      // until this resolves. Unlocked (pre-signup picker): backing out is
-      // fine, there's no account yet to strand.
-      canPop: !widget.locked,
+      // Not skippable — the account isn't usable until this resolves.
+      canPop: false,
       child: BlocListener<MessCubit, MessState>(
         listenWhen: (previous, current) =>
             current is MessReady || current is MessFailure,
@@ -226,19 +277,25 @@ class _MessChoiceSheetState extends State<MessChoiceSheet> {
                     ),
                   ),
                   Text(
-                    widget.allowModeSwitch
-                        ? 'How will you use Mess Manager?'
-                        : (_isCreateMode
-                              ? 'Create a new mess'
-                              : 'Join with a pass code'),
+                    'How will you use Mess Manager?',
                     style: AppStyle.titleText.copyWith(
                       fontSize: Dimensions.fontSizeMid,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if (widget.allowModeSwitch) _buildToggle(),
-                  if (widget.allowModeSwitch) const SizedBox(height: 24),
+                  _buildToggle(),
+                  const SizedBox(height: 24),
                   if (_isCreateMode) _buildCreateForm() else _buildJoinForm(),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    key: const ValueKey('phone'),
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(labelText: 'Phone number'),
+                    validator: (value) => (value == null || value.trim().isEmpty)
+                        ? 'Please enter your phone number'
+                        : null,
+                  ),
                   const SizedBox(height: 24),
                   BlocBuilder<MessCubit, MessState>(
                     buildWhen: (previous, current) =>

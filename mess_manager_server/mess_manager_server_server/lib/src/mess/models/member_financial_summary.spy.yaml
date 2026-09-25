@@ -1,0 +1,10 @@
+### The caller's own all-time financial position — their total deposits
+### vs. their total recorded expenses, plus the mess's overall (all-time)
+### meal rate for reference. Not a table — built by
+### `DashboardEndpoint.getMemberSummary`.
+class: MemberFinancialSummary
+fields:
+  deposit: double
+  expense: double
+  balance: double
+  mealRate: double

@@ -1,0 +1,7 @@
+### A member's role within their mess — matches lib/core/enums/user_role.dart
+### on the Flutter side.
+enum: MessMemberRole
+serialized: byName
+values:
+  - manager
+  - member

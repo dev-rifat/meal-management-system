@@ -1,0 +1,41 @@
+emailIdp:
+  - login:
+  - startRegistration:
+  - verifyRegistrationCode:
+  - finishRegistration:
+  - startPasswordReset:
+  - verifyPasswordResetCode:
+  - finishPasswordReset:
+  - hasAccount:
+jwtRefresh:
+  - refreshAccessToken:
+dashboard:
+  - getMemberSummary:
+  - getMessSummary:
+  - getMonthlySummary:
+  - getTransactions:
+expense:
+  - addExpense:
+  - addSharedExpense:
+  - getExpenses:
+  - getBillTypes:
+meal:
+  - submit:
+  - getMealsForMonth:
+  - updateStatus:
+mess:
+  - create:
+  - join:
+  - currentMembership:
+  - members:
+  - updateMemberPayment:
+  - removeMember:
+payment:
+  - addPayment:
+  - getPayments:
+userProfile:
+  - removeUserImage:
+  - setUserImage:
+  - changeUserName:
+  - changeFullName:
+  - get:

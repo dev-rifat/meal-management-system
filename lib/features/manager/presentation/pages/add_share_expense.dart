@@ -23,7 +23,7 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
   final _detailsController = TextEditingController();
   final _dateController = TextEditingController();
 
-  String? _selectedMember;
+  String? _selectedMemberId;
   String? _selectedBillType;
   DateTime _selectedDate = DateTime.now();
 
@@ -150,17 +150,18 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
                     previous.members != current.members,
                 builder: (context, state) {
                   return _buildDropdown<String>(
-                    value: _selectedMember,
+                    value: _selectedMemberId,
                     hint: "Select Member",
                     items: state.members
                         .map(
                           (member) => DropdownMenuItem(
-                            value: member,
-                            child: Text(member),
+                            value: member.id,
+                            child: Text(member.name),
                           ),
                         )
                         .toList(),
-                    onChanged: (val) => setState(() => _selectedMember = val),
+                    onChanged: (val) =>
+                        setState(() => _selectedMemberId = val),
                   );
                 },
               ),
@@ -287,7 +288,7 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
   void _submitExpense() {
     final amount = double.tryParse(_priceController.text.trim());
     if (amount == null ||
-        _selectedMember == null ||
+        _selectedMemberId == null ||
         _selectedBillType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -304,7 +305,7 @@ class _AddShareExpenseScreenState extends State<AddShareExpenseScreen> {
       amount: amount,
       date: _selectedDate,
       details: _detailsController.text.trim(),
-      spentBy: _selectedMember!,
+      spentByMemberId: _selectedMemberId!,
       billType: _selectedBillType!,
     );
   }

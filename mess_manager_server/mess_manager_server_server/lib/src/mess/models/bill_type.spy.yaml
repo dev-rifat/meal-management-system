@@ -1,0 +1,14 @@
+### A named category for shared (non-market) expenses, e.g. "WiFi", "Gas" —
+### scoped to one mess, created on demand when a manager types a new name
+### (see `ExpenseEndpoint.addSharedExpense`).
+class: BillType
+table: bill_type
+
+fields:
+  mess: Mess?, relation(onDelete=Cascade)
+  name: String
+
+indexes:
+  bill_type_mess_name_idx:
+    fields: messId, name
+    unique: true

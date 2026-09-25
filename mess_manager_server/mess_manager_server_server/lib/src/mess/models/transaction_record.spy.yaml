@@ -1,0 +1,12 @@
+### One line in a member's own transaction history — a [Payment] they made
+### (`type == deposit`) or an [Expense] they were recorded as the spender
+### of. Not a table — built by `DashboardEndpoint.getTransactions`.
+class: TransactionRecord
+fields:
+  type: TransactionType
+  amount: double
+  date: DateTime
+
+  ### The expense's title (market) or bill type name (share) — null for a
+  ### deposit, which has no title of its own.
+  label: String?

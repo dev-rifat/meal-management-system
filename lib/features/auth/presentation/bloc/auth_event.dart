@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:mass_management/core/enums/user_role.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
@@ -18,37 +17,24 @@ class LoginRequested extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
-class SignUpRequested extends AuthEvent {
-  final String email;
-  final String username;
-  final String phone;
+/// The final step of registration (after `RegistrationCubit` has walked the
+/// email-verification steps) — creates the account and signs the user in.
+/// The account has no mess yet; the caller creates/joins one next via
+/// `MessCubit`, then re-fires [CheckSessionRequested] to pick up the
+/// resulting `messId` (see `mess_choice_sheet.dart`/`user_info_sheet.dart`).
+class FinishRegistrationRequested extends AuthEvent {
+  final String registrationToken;
   final String password;
-  final UserRole role;
-  final String messId;
+  final String fullName;
 
-  const SignUpRequested({
-    required this.email,
-    required this.username,
-    required this.phone,
+  const FinishRegistrationRequested({
+    required this.registrationToken,
     required this.password,
-    required this.role,
-    required this.messId,
+    required this.fullName,
   });
 
   @override
-  List<Object?> get props => [email, username, phone, password, role, messId];
-}
-
-/// Attaches a mess to an already-authenticated session that somehow has
-/// none — the normal sign-up path attaches it at registration instead.
-class AttachMessRequested extends AuthEvent {
-  final String messId;
-  final UserRole role;
-
-  const AttachMessRequested({required this.messId, required this.role});
-
-  @override
-  List<Object?> get props => [messId, role];
+  List<Object?> get props => [registrationToken, password, fullName];
 }
 
 class LogoutRequested extends AuthEvent {

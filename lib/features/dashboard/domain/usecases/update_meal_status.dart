@@ -5,24 +5,27 @@ import 'package:mass_management/features/dashboard/domain/entities/meal_record.d
 import 'package:mass_management/features/dashboard/domain/repositories/dashboard_repository.dart';
 
 class UpdateMealStatusParams extends Equatable {
-  final String id;
+  final List<String> entryIds;
   final MealStatus status;
 
-  const UpdateMealStatusParams({required this.id, required this.status});
+  const UpdateMealStatusParams({required this.entryIds, required this.status});
 
   @override
-  List<Object?> get props => [id, status];
+  List<Object?> get props => [entryIds, status];
 }
 
-/// Updates a meal record by its stable [MealRecord.id] — never by its
-/// position within a (possibly filtered) list.
-class UpdateMealStatusUseCase implements UseCase<MealRecord, UpdateMealStatusParams> {
+/// Updates every entry behind a [MealRecord] row — never by its position
+/// within a (possibly filtered) list.
+class UpdateMealStatusUseCase implements UseCase<void, UpdateMealStatusParams> {
   final DashboardRepository repository;
 
   const UpdateMealStatusUseCase(this.repository);
 
   @override
-  Future<Result<MealRecord>> call(UpdateMealStatusParams params) {
-    return repository.updateMealStatus(id: params.id, status: params.status);
+  Future<Result<void>> call(UpdateMealStatusParams params) {
+    return repository.updateMealStatus(
+      entryIds: params.entryIds,
+      status: params.status,
+    );
   }
 }

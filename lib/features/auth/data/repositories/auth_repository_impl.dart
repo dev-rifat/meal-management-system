@@ -1,81 +1,85 @@
 import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/error/result.dart';
-import 'package:mass_management/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:mass_management/features/auth/data/datasources/auth_remote_data_source.dart';
-import 'package:mass_management/features/auth/data/models/login_request_model.dart';
 import 'package:mass_management/features/auth/domain/entities/auth_user.dart';
 import 'package:mass_management/features/auth/domain/repositories/auth_repository.dart';
+import 'package:mess_manager_server_client/mess_manager_server_client.dart';
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    hide AuthUser;
 
-/// Login hits the (demo) remote API; sign-up, logout and session lookups
-/// are all served from the in-memory local data source since there is no
-/// real backend for those yet.
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
-  final AuthLocalDataSource localDataSource;
 
-  const AuthRepositoryImpl({
-    required this.remoteDataSource,
-    required this.localDataSource,
-  });
+  const AuthRepositoryImpl({required this.remoteDataSource});
 
   @override
   Future<Result<AuthUser>> login({
     required String email,
     required String password,
   }) => guard(() async {
-    final response = await remoteDataSource.login(
-      LoginRequestModel(email: email, password: password),
-    );
-    final baseUser = response.toEntity();
-    // dummyjson has no concept of our roles — look up whatever role this
-    // email signed up with locally, defaulting to member if unseen.
-    final user = AuthUser(
-      id: baseUser.id,
-      name: baseUser.name,
-      email: baseUser.email,
-      token: baseUser.token,
-      role: localDataSource.roleForEmail(email),
-      messId: localDataSource.messIdForEmail(email),
-    );
-    localDataSource.saveSession(user);
-    return user;
+    await remoteDataSource.login(email: email, password: password);
+    return _currentAuthUser();
   });
 
   @override
-  Future<Result<AuthUser>> signUp({
-    required String email,
-    required String username,
-    required String phone,
-    required String password,
-    required UserRole role,
-    required String messId,
+  Future<Result<String>> startRegistration({required String email}) =>
+      guard(() => remoteDataSource.startRegistration(email: email));
+
+  @override
+  Future<Result<String>> verifyRegistrationCode({
+    required String accountRequestId,
+    required String code,
   }) => guard(
-    () async => localDataSource.registerUser(
-      email: email,
-      username: username,
-      phone: phone,
-      password: password,
-      role: role,
-      messId: messId,
+    () => remoteDataSource.verifyRegistrationCode(
+      accountRequestId: accountRequestId,
+      verificationCode: code,
     ),
   );
 
   @override
-  Future<Result<void>> logout() async {
-    localDataSource.clearSession();
-    return const ResultSuccess(null);
-  }
+  Future<Result<AuthUser>> finishRegistration({
+    required String registrationToken,
+    required String password,
+    required String fullName,
+  }) => guard(() async {
+    await remoteDataSource.finishRegistration(
+      registrationToken: registrationToken,
+      password: password,
+    );
+    await remoteDataSource.setFullName(fullName);
+    return _currentAuthUser();
+  });
 
   @override
-  Future<Result<AuthUser?>> getCurrentSession() async {
-    return ResultSuccess(localDataSource.currentUser);
-  }
+  Future<Result<void>> logout() => guard(remoteDataSource.logout);
 
   @override
-  Future<Result<AuthUser>> attachMess({
-    required String messId,
-    required UserRole role,
-  }) => guard(
-    () async => localDataSource.attachMess(messId: messId, role: role),
-  );
+  Future<Result<AuthUser?>> getCurrentSession() => guard(() async {
+    final profile = await remoteDataSource.getCurrentProfile();
+    if (profile == null) return null;
+    return _currentAuthUser(profile: profile);
+  });
+
+  /// Combines the current profile (name/email) with the current mess
+  /// membership (role/phone/messId, if any) into one [AuthUser] — the two
+  /// live in separate tables server-side (see `AuthRemoteDataSource`'s doc
+  /// comment) but the app's domain treats them as one identity.
+  Future<AuthUser> _currentAuthUser({UserProfileModel? profile}) async {
+    final resolvedProfile = profile ?? await remoteDataSource.getCurrentProfile();
+    if (resolvedProfile == null) {
+      throw StateError('Expected an active session but found none.');
+    }
+    final membership = await remoteDataSource.getCurrentMembership();
+    return AuthUser(
+      id: resolvedProfile.authUserId.toString(),
+      name: resolvedProfile.fullName ?? resolvedProfile.userName ?? '',
+      email: resolvedProfile.email ?? '',
+      role: switch (membership?.role) {
+        MessMemberRole.manager => UserRole.manager,
+        MessMemberRole.member || null => UserRole.member,
+      },
+      messId: membership?.messId.toString(),
+      phone: membership?.phone,
+    );
+  }
 }

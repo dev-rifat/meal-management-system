@@ -1,0 +1,6 @@
+enum: TransactionType
+serialized: byName
+values:
+  - deposit
+  - marketExpense
+  - sharedExpense

@@ -33,7 +33,7 @@ void main() {
           amount: 1200,
           date: date,
           details: 'Vegetables',
-          spentBy: 'Rifat Al Hasan',
+          spentByMemberId: 'm1',
         )).thenAnswer((_) async => ResultSuccess(created));
 
     final result = await useCase(AddExpenseParams(
@@ -41,7 +41,7 @@ void main() {
       amount: 1200,
       date: date,
       details: 'Vegetables',
-      spentBy: 'Rifat Al Hasan',
+      spentByMemberId: 'm1',
     ));
 
     expect(result, isA<ResultSuccess<Expense>>());

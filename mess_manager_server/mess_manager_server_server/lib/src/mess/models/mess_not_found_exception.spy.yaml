@@ -1,0 +1,2 @@
+### Thrown by [MessEndpoint.join] when no mess matches the given invite code.
+exception: MessNotFoundException

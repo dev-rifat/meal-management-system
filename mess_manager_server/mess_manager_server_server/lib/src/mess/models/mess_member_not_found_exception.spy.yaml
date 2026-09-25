@@ -1,0 +1,4 @@
+### Thrown when the caller has no membership in any mess yet, or a
+### manager-only method targets a member id that doesn't exist in their
+### mess.
+exception: MessMemberNotFoundException

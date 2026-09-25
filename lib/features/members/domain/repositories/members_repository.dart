@@ -11,5 +11,18 @@ abstract class MembersRepository {
 
   Future<Result<void>> deleteMember(String id);
 
-  Future<Result<Member>> updateMember(Member member);
+  Future<Result<void>> updateMemberPayment({
+    required String id,
+    required MemberPaymentStatus paymentStatus,
+    DateTime? paymentDate,
+  });
+
+  /// Records a deposit [amount] for member [id] on [date] — the credit
+  /// side of their balance, shown back on the dashboard/wallet screens.
+  /// Manager-only, enforced server-side.
+  Future<Result<void>> recordPayment({
+    required String id,
+    required double amount,
+    required DateTime date,
+  });
 }

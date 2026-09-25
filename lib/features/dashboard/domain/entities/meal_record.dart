@@ -10,37 +10,46 @@ extension MealStatusLabel on MealStatus {
       };
 }
 
-/// A single day's meal entry. Carries a stable [id] so presentation code
-/// can update the right record after filtering, instead of relying on a
-/// position within whatever filtered list happens to be on screen.
+/// One member's meal totals for one day, built by grouping the server's
+/// per-(member, date, meal type) rows — see `DashboardRemoteDataSource`'s
+/// doc comment for the grouping/status-rollup rules. [entryIds] carries
+/// the underlying row ids so an approve/reject action can update all of
+/// them together; [id] is just a stable per-row key for widgets.
 class MealRecord extends Equatable {
   final String id;
+  final String memberId;
+  final String memberName;
   final DateTime date;
   final double breakfast;
   final double lunch;
   final double dinner;
   final MealStatus status;
+  final List<String> entryIds;
 
   const MealRecord({
     required this.id,
+    required this.memberId,
+    required this.memberName,
     required this.date,
     required this.breakfast,
     required this.lunch,
     required this.dinner,
     required this.status,
+    required this.entryIds,
   });
 
   double get total => breakfast + lunch + dinner;
 
-  MealRecord copyWith({MealStatus? status}) => MealRecord(
-        id: id,
-        date: date,
-        breakfast: breakfast,
-        lunch: lunch,
-        dinner: dinner,
-        status: status ?? this.status,
-      );
-
   @override
-  List<Object?> get props => [id, date, breakfast, lunch, dinner, status];
+  List<Object?> get props => [
+        id,
+        memberId,
+        memberName,
+        date,
+        breakfast,
+        lunch,
+        dinner,
+        status,
+        entryIds,
+      ];
 }

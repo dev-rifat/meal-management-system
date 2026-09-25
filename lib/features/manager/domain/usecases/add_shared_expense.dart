@@ -8,7 +8,7 @@ class AddSharedExpenseParams {
   final double amount;
   final DateTime date;
   final String details;
-  final String spentBy;
+  final String spentByMemberId;
   final String billType;
 
   const AddSharedExpenseParams({
@@ -16,7 +16,7 @@ class AddSharedExpenseParams {
     required this.amount,
     required this.date,
     required this.details,
-    required this.spentBy,
+    required this.spentByMemberId,
     required this.billType,
   });
 }
@@ -33,7 +33,7 @@ class AddSharedExpense implements UseCase<Expense, AddSharedExpenseParams> {
       amount: params.amount,
       date: params.date,
       details: params.details,
-      spentBy: params.spentBy,
+      spentByMemberId: params.spentByMemberId,
       billType: params.billType,
     );
   }

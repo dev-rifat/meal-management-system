@@ -2,7 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mass_management/features/members/domain/entities/member.dart';
 import 'package:mass_management/features/members/domain/usecases/delete_member.dart';
 import 'package:mass_management/features/members/domain/usecases/get_members.dart';
-import 'package:mass_management/features/members/domain/usecases/update_member.dart';
+import 'package:mass_management/features/members/domain/usecases/record_payment.dart';
+import 'package:mass_management/features/members/domain/usecases/update_member_payment.dart';
 import 'package:mass_management/features/members/presentation/cubit/members_state.dart';
 
 /// Drives the member list screen. Search-as-you-type, delete and update all
@@ -11,7 +12,8 @@ import 'package:mass_management/features/members/presentation/cubit/members_stat
 class MembersCubit extends Cubit<MembersState> {
   final GetMembers _getMembers;
   final DeleteMember _deleteMember;
-  final UpdateMember _updateMember;
+  final UpdateMemberPayment _updateMemberPayment;
+  final RecordPayment _recordPayment;
 
   /// The most recent search query, so delete/update can refresh the list
   /// under the same filter afterwards.
@@ -20,10 +22,12 @@ class MembersCubit extends Cubit<MembersState> {
   MembersCubit({
     required GetMembers getMembers,
     required DeleteMember deleteMember,
-    required UpdateMember updateMember,
+    required UpdateMemberPayment updateMemberPayment,
+    required RecordPayment recordPayment,
   })  : _getMembers = getMembers,
         _deleteMember = deleteMember,
-        _updateMember = updateMember,
+        _updateMemberPayment = updateMemberPayment,
+        _recordPayment = recordPayment,
         super(const MembersLoading()) {
     search('');
   }
@@ -47,8 +51,28 @@ class MembersCubit extends Cubit<MembersState> {
     );
   }
 
-  Future<void> update(Member member) async {
-    final result = await _updateMember(UpdateMemberParams(member));
+  Future<void> updatePayment(
+    String id,
+    MemberPaymentStatus paymentStatus,
+    DateTime? paymentDate,
+  ) async {
+    final result = await _updateMemberPayment(
+      UpdateMemberPaymentParams(
+        id: id,
+        paymentStatus: paymentStatus,
+        paymentDate: paymentDate,
+      ),
+    );
+    await result.fold(
+      (failure) async => emit(MembersError(failure.message)),
+      (_) async => search(_query),
+    );
+  }
+
+  Future<void> recordPayment(String id, double amount, DateTime date) async {
+    final result = await _recordPayment(
+      RecordPaymentParams(id: id, amount: amount, date: date),
+    );
     await result.fold(
       (failure) async => emit(MembersError(failure.message)),
       (_) async => search(_query),

@@ -22,8 +22,18 @@ class MonthlySummaryCubit extends Cubit<MonthlySummaryState> {
 
   Future<void> changeFilter(String filter, {DateTimeRange? range}) {
     _filter = filter;
-    _range = filter == "Custom" ? (range ?? _range) : null;
+    _range = switch (filter) {
+      "Custom" => range ?? _range,
+      "Last Month" => _lastMonthRange(),
+      _ => null,
+    };
     return _fetch();
+  }
+
+  DateTimeRange _lastMonthRange() {
+    final now = DateTime.now();
+    final lastMonth = DateTime(now.year, now.month - 1);
+    return DateTimeRange(start: lastMonth, end: lastMonth);
   }
 
   /// Preserves the original substring, case-insensitive name search.

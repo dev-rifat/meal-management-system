@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mass_management/core/enums/user_role.dart';
 import 'package:mass_management/core/widgets/custom_app_bar.dart';
 import 'package:mass_management/core/widgets/custom_app_button.dart';
 import 'package:mass_management/core/widgets/success_message.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mass_management/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_meal_cubit.dart';
 import 'package:mass_management/features/manager/presentation/cubit/add_meal_state.dart';
+import 'package:mass_management/features/members/domain/entities/member.dart';
 import 'package:mass_management/core/theme/app_color.dart';
-import 'package:mass_management/core/theme/app_style.dart';
 
 /// Placeholder value in the manager's member dropdown meaning "nothing
-/// selected yet" — kept separate from the real, cubit-loaded member names.
+/// selected yet".
 const String _selectMemberPlaceholder = "Select Member";
 
+/// Reads role/identity from [AuthBloc] itself (like `meal_list.dart` does)
+/// rather than taking them as constructor params — this used to default
+/// to a hardcoded "Rifat" placeholder for whoever reached this screen
+/// without a caller-supplied name (e.g. the standalone `/entry_meal_screen`
+/// route), which is no longer needed now that a real session exists.
 class AddMeal extends StatefulWidget {
-  final String role; // "manager" or "member"
-  final String currentUserName; // logged-in user's name
-
-  const AddMeal({
-    super.key,
-    this.role = "manager",
-    this.currentUserName = "Rifat",
-  });
+  const AddMeal({super.key});
 
   @override
   State<AddMeal> createState() => _AddMealState();
@@ -28,32 +29,22 @@ class AddMeal extends StatefulWidget {
 
 class _AddMealState extends State<AddMeal> {
   DateTime selectedDate = DateTime.now();
+  String? _selectedMemberId;
 
-  late String selectedUser;
-
-  // Meals (default)
+  // Meals — fixed to breakfast/lunch/dinner, matching what the server
+  // actually supports (no arbitrary custom meal types).
   final Map<String, double> _meals = {
     "Breakfast": 0.5,
     "Lunch": 1,
     "Dinner": 1,
   };
 
-  final TextEditingController _mealNameController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-    // Default selected user
-    selectedUser = widget.role == "manager"
-        ? _selectMemberPlaceholder
-        : widget.currentUserName;
-    context.read<AddMealCubit>().loadMembers();
-  }
-
-  @override
-  void dispose() {
-    _mealNameController.dispose();
-    super.dispose();
+    final authState = context.read<AuthBloc>().state;
+    final email = authState is AuthAuthenticated ? authState.user.email : '';
+    context.read<AddMealCubit>().loadMembers(email);
   }
 
   /// Change meal count
@@ -94,56 +85,10 @@ class _AddMealState extends State<AddMeal> {
     }
   }
 
-  /// Add custom meal type
-  void _addCustomMeal() {
-    final mealName = _mealNameController.text.trim();
-
-    if (mealName.isNotEmpty && !_meals.containsKey(mealName)) {
-      if (mounted) {
-        setState(() {
-          _meals[mealName] = 0.5;
-          _mealNameController.clear();
-        });
-      }
-    }
-  }
-
-  /// Dialog to add new meal
-  void _showAddMealDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Add Custom Meal"),
-        content: TextField(
-          controller: _mealNameController,
-          decoration: const InputDecoration(
-            hintText: "Enter meal name (e.g. Snacks)",
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: _addCustomMeal,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.primaryColor,
-            ),
-            child: Text(
-              "Add",
-              style: AppStyle.normalText.copyWith(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// Submit meals
-  void _submitMeal() {
-    if (widget.role == "manager" && selectedUser == _selectMemberPlaceholder) {
+  void _submitMeal(bool isManager) {
+    final memberId = isManager ? _selectedMemberId : context.read<AddMealCubit>().state.myMemberId;
+    if (memberId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select a member first.")),
       );
@@ -151,16 +96,19 @@ class _AddMealState extends State<AddMeal> {
     }
 
     context.read<AddMealCubit>().submit(
+      memberId: memberId,
       date: selectedDate,
-      mealCounts: _meals,
-      submittedFor: selectedUser,
-      role: widget.role,
+      mealCounts: {
+        for (final entry in _meals.entries) entry.key.toLowerCase(): entry.value,
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isManager = widget.role == "manager";
+    final authState = context.watch<AuthBloc>().state;
+    final isManager =
+        authState is AuthAuthenticated && authState.user.role == UserRole.manager;
 
     return Scaffold(
       appBar: CustomAppBar(title: "Add Meal", backgroundColor: Colors.white),
@@ -226,10 +174,7 @@ class _AddMealState extends State<AddMeal> {
                   buildWhen: (previous, current) =>
                       previous.members != current.members,
                   builder: (context, state) {
-                    final dropdownUsers = [
-                      _selectMemberPlaceholder,
-                      ...state.members,
-                    ];
+                    final dropdownMembers = <Member?>[null, ...state.members];
                     return Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -241,18 +186,16 @@ class _AddMealState extends State<AddMeal> {
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: dropdownUsers.contains(selectedUser)
-                              ? selectedUser
-                              : _selectMemberPlaceholder,
+                        child: DropdownButton<String?>(
+                          value: _selectedMemberId,
                           isExpanded: true,
-                          items: dropdownUsers.map((user) {
-                            return DropdownMenuItem<String>(
-                              value: user,
+                          items: dropdownMembers.map((member) {
+                            return DropdownMenuItem<String?>(
+                              value: member?.id,
                               child: Text(
-                                user,
+                                member?.name ?? _selectMemberPlaceholder,
                                 style: TextStyle(
-                                  color: user == _selectMemberPlaceholder
+                                  color: member == null
                                       ? Colors.grey.shade600
                                       : Colors.black,
                                   fontWeight: FontWeight.w500,
@@ -261,9 +204,7 @@ class _AddMealState extends State<AddMeal> {
                             );
                           }).toList(),
                           onChanged: (value) {
-                            setState(() {
-                              selectedUser = value!;
-                            });
+                            setState(() => _selectedMemberId = value);
                           },
                         ),
                       ),
@@ -274,23 +215,12 @@ class _AddMealState extends State<AddMeal> {
               const SizedBox(height: 20),
 
               /// Header Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Meals",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  IconButton(
-                    onPressed: _showAddMealDialog,
-                    icon: const Icon(
-                      Icons.add_circle,
-                      color: AppColor.primaryColor,
-                      size: 30,
-                    ),
-                    tooltip: "Add custom meal",
-                  ),
-                ],
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Meals",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
               ),
 
               const SizedBox(height: 10),
@@ -373,7 +303,7 @@ class _AddMealState extends State<AddMeal> {
                   return CustomAppButton(
                     onPressed: state.status == AddMealStatus.submitting
                         ? null
-                        : _submitMeal,
+                        : () => _submitMeal(isManager),
                     text: state.status == AddMealStatus.submitting
                         ? "Submitting..."
                         : "Add Meal",

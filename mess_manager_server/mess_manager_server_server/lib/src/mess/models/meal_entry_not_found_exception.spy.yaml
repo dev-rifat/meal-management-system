@@ -1,0 +1,3 @@
+### Thrown when a `MealEndpoint.updateStatus` call targets an id that
+### doesn't exist in the caller's mess.
+exception: MealEntryNotFoundException

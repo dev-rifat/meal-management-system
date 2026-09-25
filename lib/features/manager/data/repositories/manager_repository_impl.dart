@@ -1,23 +1,31 @@
 import 'package:mass_management/core/error/result.dart';
-import 'package:mass_management/features/manager/data/datasources/manager_local_data_source.dart';
+import 'package:mass_management/features/manager/data/datasources/manager_remote_data_source.dart';
 import 'package:mass_management/features/manager/domain/entities/expense.dart';
 import 'package:mass_management/features/manager/domain/entities/expense_summary.dart';
-import 'package:mass_management/features/manager/domain/entities/manager_meal_entry.dart';
 import 'package:mass_management/features/manager/domain/repositories/manager_repository.dart';
+import 'package:mass_management/features/members/domain/repositories/members_repository.dart';
 
 class ManagerRepositoryImpl implements ManagerRepository {
-  final ManagerLocalDataSource localDataSource;
+  final ManagerRemoteDataSource remoteDataSource;
+  final MembersRepository membersRepository;
 
-  ManagerRepositoryImpl(this.localDataSource);
+  ManagerRepositoryImpl({
+    required this.remoteDataSource,
+    required this.membersRepository,
+  });
 
   @override
-  Future<Result<List<Expense>>> getExpenses({String query = '', ExpenseType? filter}) async {
-    return ResultSuccess(localDataSource.getExpenses(query: query, filter: filter));
-  }
+  Future<Result<List<Expense>>> getExpenses({
+    String query = '',
+    ExpenseType? filter,
+  }) => guard(() => remoteDataSource.getExpenses(query: query, filter: filter));
 
   @override
-  Future<Result<ExpenseSummary>> getExpenseSummary() async {
-    final expenses = localDataSource.allExpenses;
+  Future<Result<ExpenseSummary>> getExpenseSummary() => guard(() async {
+    final expenses = await remoteDataSource.getExpenses();
+    final members = await membersRepository
+        .getMembers()
+        .then((result) => result.fold((f) => throw StateError(f.message), (m) => m));
 
     final totalCost = expenses.fold<double>(0, (sum, expense) => sum + expense.amount);
     final marketTotal = expenses
@@ -31,19 +39,18 @@ class ManagerRepositoryImpl implements ManagerRepository {
     final sharePercentage = totalCost == 0 ? 0.0 : (shareTotal / totalCost) * 100;
     final remainingPercentage = (100 - foodPercentage - sharePercentage).clamp(0, 100).toDouble();
 
-    return ResultSuccess(
-      ExpenseSummary(
-        membersCount: localDataSource.getMembersCount(),
-        // No income/payment source exists yet, so balance mirrors totalCost —
-        // same relationship the old hardcoded literals had, just computed now.
-        totalCost: totalCost,
-        balance: totalCost,
-        foodExpensePercentage: foodPercentage,
-        sharedExpensePercentage: sharePercentage,
-        remainingPercentage: remainingPercentage,
-      ),
+    return ExpenseSummary(
+      membersCount: members.length,
+      // No income/payment source exists yet, so balance mirrors totalCost —
+      // same relationship the old hardcoded literals had, just computed
+      // from real expenses now.
+      totalCost: totalCost,
+      balance: totalCost,
+      foodExpensePercentage: foodPercentage,
+      sharedExpensePercentage: sharePercentage,
+      remainingPercentage: remainingPercentage,
     );
-  }
+  });
 
   @override
   Future<Result<Expense>> addExpense({
@@ -51,16 +58,16 @@ class ManagerRepositoryImpl implements ManagerRepository {
     required double amount,
     required DateTime date,
     required String details,
-    required String spentBy,
-  }) async {
-    return ResultSuccess(localDataSource.addExpense(
+    required String spentByMemberId,
+  }) => guard(
+    () => remoteDataSource.addExpense(
       title: title,
       amount: amount,
       date: date,
       details: details,
-      spentBy: spentBy,
-    ));
-  }
+      spentByMemberId: spentByMemberId,
+    ),
+  );
 
   @override
   Future<Result<Expense>> addSharedExpense({
@@ -68,46 +75,20 @@ class ManagerRepositoryImpl implements ManagerRepository {
     required double amount,
     required DateTime date,
     required String details,
-    required String spentBy,
+    required String spentByMemberId,
     required String billType,
-  }) async {
-    return ResultSuccess(localDataSource.addSharedExpense(
+  }) => guard(
+    () => remoteDataSource.addSharedExpense(
       title: title,
       amount: amount,
       date: date,
       details: details,
-      spentBy: spentBy,
+      spentByMemberId: spentByMemberId,
       billType: billType,
-    ));
-  }
+    ),
+  );
 
   @override
-  Future<Result<List<String>>> getBillTypes() async {
-    return ResultSuccess(localDataSource.getBillTypes());
-  }
-
-  @override
-  Future<Result<List<String>>> addCustomBillType(String billType) async {
-    return ResultSuccess(localDataSource.addCustomBillType(billType));
-  }
-
-  @override
-  Future<Result<List<String>>> getMembersForDropdown() async {
-    return ResultSuccess(localDataSource.getMembersForDropdown());
-  }
-
-  @override
-  Future<Result<ManagerMealEntry>> addMealEntry({
-    required DateTime date,
-    required Map<String, double> mealCounts,
-    required String submittedFor,
-    required String role,
-  }) async {
-    return ResultSuccess(localDataSource.addMealEntry(
-      date: date,
-      mealCounts: mealCounts,
-      submittedFor: submittedFor,
-      role: role,
-    ));
-  }
+  Future<Result<List<String>>> getBillTypes() =>
+      guard(() => remoteDataSource.getBillTypes());
 }

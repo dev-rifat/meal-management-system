@@ -64,7 +64,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
   /// Manager gets all 5 tabs; Member gets 4 — the Manager tab (mess-wide
   /// summary + cross-member operations) is dropped entirely, not just
   /// hidden-but-reachable.
-  List<_TabSpec> _buildTabs(UserRole role, String userName) {
+  List<_TabSpec> _buildTabs(UserRole role) {
     final isManager = role == UserRole.manager;
 
     return [
@@ -80,7 +80,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
       _TabSpec(
         BlocProvider(
           create: (_) => sl<AddMealCubit>(),
-          child: AddMeal(role: role.value, currentUserName: userName),
+          child: const AddMeal(),
         ),
         _navItem(Icons.add, "Add"),
       ),
@@ -101,9 +101,8 @@ class _MainNavScreenState extends State<MainNavScreen> {
     final role = authState is AuthAuthenticated
         ? authState.user.role
         : UserRole.member;
-    final userName = authState is AuthAuthenticated ? authState.user.name : '';
 
-    final tabs = _buildTabs(role, userName);
+    final tabs = _buildTabs(role);
 
     return PersistentTabView(
       context,

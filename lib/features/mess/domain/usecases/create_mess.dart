@@ -6,11 +6,12 @@ import 'package:mass_management/features/mess/domain/repositories/mess_repositor
 
 class CreateMessParams extends Equatable {
   final String name;
+  final String phone;
 
-  const CreateMessParams(this.name);
+  const CreateMessParams({required this.name, required this.phone});
 
   @override
-  List<Object?> get props => [name];
+  List<Object?> get props => [name, phone];
 }
 
 class CreateMess implements UseCase<Mess, CreateMessParams> {
@@ -20,6 +21,6 @@ class CreateMess implements UseCase<Mess, CreateMessParams> {
 
   @override
   Future<Result<Mess>> call(CreateMessParams params) {
-    return repository.createMess(name: params.name);
+    return repository.createMess(name: params.name, phone: params.phone);
   }
 }

@@ -1,0 +1,56 @@
+/* AUTOMATICALLY GENERATED CODE DO NOT MODIFY */
+/*   To generate run: "serverpod generate"    */
+
+// ignore_for_file: implementation_imports
+// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: public_member_api_docs
+// ignore_for_file: type_literal_in_constant_pattern
+// ignore_for_file: use_super_parameters
+// ignore_for_file: invalid_use_of_internal_member
+
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+
+/// Thrown when the caller has no membership in any mess yet, or a
+/// manager-only method targets a member id that doesn't exist in their
+/// mess.
+abstract class MessMemberNotFoundException
+    implements _i1.SerializableException, _i1.SerializableModel {
+  MessMemberNotFoundException._();
+
+  factory MessMemberNotFoundException() = _MessMemberNotFoundExceptionImpl;
+
+  factory MessMemberNotFoundException.fromJson(
+    Map<String, dynamic> jsonSerialization,
+  ) {
+    return MessMemberNotFoundException();
+  }
+
+  /// Returns a shallow copy of this [MessMemberNotFoundException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
+  MessMemberNotFoundException copyWith();
+  @override
+  Map<String, dynamic> toJson() {
+    return {'__className__': 'MessMemberNotFoundException'};
+  }
+
+  @override
+  String toString() {
+    return 'MessMemberNotFoundException';
+  }
+}
+
+class _MessMemberNotFoundExceptionImpl extends MessMemberNotFoundException {
+  _MessMemberNotFoundExceptionImpl() : super._();
+
+  /// Returns a shallow copy of this [MessMemberNotFoundException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
+  @override
+  MessMemberNotFoundException copyWith() {
+    return MessMemberNotFoundException();
+  }
+}

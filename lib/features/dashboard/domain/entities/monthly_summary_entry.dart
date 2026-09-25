@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 /// A single mess member's row within the monthly summary.
 class MonthlySummaryEntry extends Equatable {
   final String name;
-  final int totalMeal;
+  final double totalMeal;
   final double totalCost;
   final double paid;
 

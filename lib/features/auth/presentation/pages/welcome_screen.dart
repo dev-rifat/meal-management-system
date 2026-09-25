@@ -17,13 +17,9 @@ class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   Future<void> _startMessFlow(BuildContext context, {required bool create}) async {
-    final choice = await pickMessChoice(
-      context,
-      initiallyCreate: create,
-      allowModeSwitch: false,
-    );
+    final choice = await pickMessChoice(context, isCreate: create);
     if (choice == null || !context.mounted) return;
-    await showUserInfoSheet(context, messId: choice.messId, role: choice.role);
+    await showUserInfoSheet(context, pendingChoice: choice);
   }
 
   @override

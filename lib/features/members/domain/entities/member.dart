@@ -12,10 +12,9 @@ enum MemberPaymentStatus {
 }
 
 /// Domain-level representation of a mess member, decoupled from whatever
-/// shape a future remote/local data source happens to return.
-///
-/// Immutable by design — updates go through [copyWith] and flow back
-/// through the `UpdateMember` use case rather than mutating fields in place.
+/// shape the remote data source returns. `name`/`email` come from the
+/// member's own account (Serverpod's profile) — a manager can't edit
+/// those, only [paymentStatus]/[paymentDate] (see `UpdateMemberPayment`).
 class Member extends Equatable {
   final String id;
   final String name;
@@ -24,7 +23,10 @@ class Member extends Equatable {
   final String profileImage;
   final DateTime joiningDate;
   final MemberPaymentStatus paymentStatus;
-  final DateTime paymentDate;
+
+  /// `null` until a manager records a payment — a member who has never
+  /// paid has no payment date, unlike the mock era's always-present one.
+  final DateTime? paymentDate;
 
   const Member({
     required this.id,
@@ -34,29 +36,8 @@ class Member extends Equatable {
     required this.profileImage,
     required this.joiningDate,
     this.paymentStatus = MemberPaymentStatus.due,
-    required this.paymentDate,
+    this.paymentDate,
   });
-
-  Member copyWith({
-    String? name,
-    String? username,
-    String? email,
-    String? profileImage,
-    DateTime? joiningDate,
-    MemberPaymentStatus? paymentStatus,
-    DateTime? paymentDate,
-  }) {
-    return Member(
-      id: id,
-      name: name ?? this.name,
-      username: username ?? this.username,
-      email: email ?? this.email,
-      profileImage: profileImage ?? this.profileImage,
-      joiningDate: joiningDate ?? this.joiningDate,
-      paymentStatus: paymentStatus ?? this.paymentStatus,
-      paymentDate: paymentDate ?? this.paymentDate,
-    );
-  }
 
   @override
   List<Object?> get props => [

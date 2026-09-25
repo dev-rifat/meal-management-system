@@ -275,7 +275,7 @@ class _MonthlySummaryView extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Total Meal: ${member.totalMeal}"),
+            Text("Total Meal: ${member.totalMeal.toStringAsFixed(1)}"),
             Text("Total Cost: ৳${member.totalCost.toStringAsFixed(0)}"),
             Text("Meal Cost: ৳${mealCost.toStringAsFixed(0)}"),
             Text(

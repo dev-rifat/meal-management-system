@@ -1,0 +1,8 @@
+### A month's mess-wide totals plus the per-member breakdown that make up
+### the monthly summary screen. Not a table — built by
+### `DashboardEndpoint.getMonthlySummary`.
+class: MonthlySummaryResult
+fields:
+  totalCost: double
+  totalMeal: double
+  members: List<MonthlySummaryMember>

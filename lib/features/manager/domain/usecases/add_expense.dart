@@ -8,14 +8,14 @@ class AddExpenseParams {
   final double amount;
   final DateTime date;
   final String details;
-  final String spentBy;
+  final String spentByMemberId;
 
   const AddExpenseParams({
     required this.title,
     required this.amount,
     required this.date,
     required this.details,
-    required this.spentBy,
+    required this.spentByMemberId,
   });
 }
 
@@ -31,7 +31,7 @@ class AddExpense implements UseCase<Expense, AddExpenseParams> {
       amount: params.amount,
       date: params.date,
       details: params.details,
-      spentBy: params.spentBy,
+      spentByMemberId: params.spentByMemberId,
     );
   }
 }

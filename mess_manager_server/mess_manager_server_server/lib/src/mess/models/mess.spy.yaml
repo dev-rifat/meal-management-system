@@ -1,0 +1,22 @@
+### A shared mess/hostel — the tenant every member, meal, and expense
+### belongs to. Created by whoever taps "Create a Mess"; everyone else joins
+### with [inviteCode].
+class: Mess
+table: mess
+
+fields:
+  ### Human-readable name, e.g. "Sunshine Mess".
+  name: String
+
+  ### Code members use to join — unique, generated server-side.
+  inviteCode: String
+
+  ### The AuthUser id of whoever created this mess (its first manager).
+  ownerAuthUserId: UuidValue
+
+  createdAt: DateTime, default=now
+
+indexes:
+  mess_invite_code_idx:
+    fields: inviteCode
+    unique: true

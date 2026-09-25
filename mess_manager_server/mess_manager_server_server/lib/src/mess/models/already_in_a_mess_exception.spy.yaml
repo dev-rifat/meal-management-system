@@ -1,0 +1,3 @@
+### Thrown by [MessEndpoint.create]/[MessEndpoint.join] when the caller
+### already has a [MessMember] row — one mess per person.
+exception: AlreadyInAMessException

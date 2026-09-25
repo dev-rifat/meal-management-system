@@ -19,10 +19,9 @@ void main() {
   });
 
   const user = AuthUser(
-    id: 1,
+    id: '1',
     name: 'Jane',
     email: 'jane@example.com',
-    token: 'token',
     role: UserRole.member,
   );
 

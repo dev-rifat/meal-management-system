@@ -1,10 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:mass_management/features/members/domain/entities/member.dart';
 
 enum AddExpenseStatus { initial, loadingMembers, ready, submitting, success, error }
 
 class AddExpenseState extends Equatable {
   final AddExpenseStatus status;
-  final List<String> members;
+  final List<Member> members;
   final String? errorMessage;
 
   const AddExpenseState({
@@ -15,7 +16,7 @@ class AddExpenseState extends Equatable {
 
   AddExpenseState copyWith({
     AddExpenseStatus? status,
-    List<String>? members,
+    List<Member>? members,
     String? errorMessage,
   }) {
     return AddExpenseState(

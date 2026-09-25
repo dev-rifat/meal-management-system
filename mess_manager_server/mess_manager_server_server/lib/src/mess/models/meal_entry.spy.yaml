@@ -1,0 +1,23 @@
+### One member's meal count for one day and meal type — e.g. "Jane, 2026-01-05,
+### lunch, 1.0". Replaces two disconnected mock concepts (a per-day,
+### ownerless `MealRecord` with a status, and a per-member `ManagerMealEntry`
+### with no status/read path) with one real, per-entry model: a member (or
+### their manager) submits it, a manager approves/rejects it.
+class: MealEntry
+table: meal_entry
+
+fields:
+  mess: Mess?, relation(onDelete=Cascade)
+  member: MessMember?, relation(onDelete=Cascade)
+  date: DateTime
+  mealType: MealType
+  mealCount: double
+  status: MealStatus, default=pending
+  createdAt: DateTime, default=now
+
+indexes:
+  ### One entry per member/date/meal-type — resubmitting overwrites rather
+  ### than duplicating.
+  meal_entry_member_date_type_idx:
+    fields: memberId, date, mealType
+    unique: true

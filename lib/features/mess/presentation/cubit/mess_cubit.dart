@@ -13,18 +13,22 @@ class MessCubit extends Cubit<MessState> {
         _joinMess = joinMess,
         super(const MessInitial());
 
-  Future<void> createMess(String name) async {
+  Future<void> createMess(String name, String phone) async {
     emit(const MessSubmitting());
-    final result = await _createMess(CreateMessParams(name));
+    final result = await _createMess(
+      CreateMessParams(name: name, phone: phone),
+    );
     result.fold(
       (failure) => emit(MessFailure(failure.message)),
       (mess) => emit(MessReady(mess)),
     );
   }
 
-  Future<void> joinMess(String inviteCode) async {
+  Future<void> joinMess(String inviteCode, String phone) async {
     emit(const MessSubmitting());
-    final result = await _joinMess(JoinMessParams(inviteCode));
+    final result = await _joinMess(
+      JoinMessParams(inviteCode: inviteCode, phone: phone),
+    );
     result.fold(
       (failure) => emit(MessFailure(failure.message)),
       (mess) => emit(MessReady(mess)),

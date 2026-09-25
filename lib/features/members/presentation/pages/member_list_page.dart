@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mass_management/core/enums/user_role.dart';
-import 'package:mass_management/core/widgets/app_input_field.dart'
-    show CustomInputField;
 import 'package:mass_management/core/widgets/confirm_dialog.dart'
     show showConfirmDialog;
 import 'package:mass_management/core/widgets/custom_app_bar.dart'
@@ -55,9 +53,10 @@ class _MemberListPageState extends State<MemberListPage> {
     );
   }
 
+  // Name/email are the member's own account details (Serverpod profile) —
+  // a manager can only update payment status here, not edit someone else's
+  // identity.
   Future<void> _handleUpdate(Member member) async {
-    final nameController = TextEditingController(text: member.name);
-    final emailController = TextEditingController(text: member.email);
     var paymentStatus = member.paymentStatus;
 
     final saved = await showDialog<bool>(
@@ -66,18 +65,10 @@ class _MemberListPageState extends State<MemberListPage> {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             return AlertDialog(
-              title: const Text('Update Member'),
+              title: Text('Update ${member.name}'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CustomInputField(
-                    controller: nameController,
-                    hintText: "Name",
-                  ),
-                  CustomInputField(
-                    controller: emailController,
-                    hintText: "Email",
-                  ),
                   DropdownButtonFormField<MemberPaymentStatus>(
                     initialValue: paymentStatus,
                     items: MemberPaymentStatus.values.map((status) {
@@ -115,16 +106,88 @@ class _MemberListPageState extends State<MemberListPage> {
 
     if (saved != true || !mounted) return;
 
-    final updated = member.copyWith(
-      name: nameController.text,
-      email: emailController.text,
-      paymentStatus: paymentStatus,
-    );
     final cubit = context.read<MembersCubit>();
-    await cubit.update(updated);
+    await cubit.updatePayment(
+      member.id,
+      paymentStatus,
+      paymentStatus == MemberPaymentStatus.clear
+          ? DateTime.now()
+          : member.paymentDate,
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("${updated.name} updated successfully")),
+      SnackBar(content: Text("${member.name} updated successfully")),
+    );
+  }
+
+  Future<void> _handleRecordPayment(Member member) async {
+    final amountController = TextEditingController();
+    var date = DateTime.now();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              title: Text('Record payment — ${member.name}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Amount"),
+                    autofocus: true,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(DateFormat.yMMMd().format(date)),
+                      TextButton(
+                        onPressed: () async {
+                          final picked = await showDatePicker(
+                            context: dialogContext,
+                            initialDate: date,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime.now(),
+                          );
+                          if (picked != null) {
+                            setDialogState(() => date = picked);
+                          }
+                        },
+                        child: const Text("Change date"),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    final amount = double.tryParse(amountController.text.trim());
+    amountController.dispose();
+    if (confirmed != true || amount == null || amount <= 0 || !mounted) return;
+
+    final cubit = context.read<MembersCubit>();
+    await cubit.recordPayment(member.id, amount, date);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Payment recorded for ${member.name}")),
     );
   }
 
@@ -176,6 +239,7 @@ class _MemberListPageState extends State<MemberListPage> {
                       canModify: widget.viewerRole == UserRole.manager,
                       onDelete: _handleDelete,
                       onUpdate: _handleUpdate,
+                      onRecordPayment: _handleRecordPayment,
                     ),
                   };
                 },
@@ -195,12 +259,14 @@ class _MemberListView extends StatelessWidget {
   final bool canModify;
   final void Function(Member member) onDelete;
   final void Function(Member member) onUpdate;
+  final void Function(Member member) onRecordPayment;
 
   const _MemberListView({
     required this.members,
     required this.canModify,
     required this.onDelete,
     required this.onUpdate,
+    required this.onRecordPayment,
   });
 
   @override
@@ -236,7 +302,9 @@ class _MemberListView extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Payment: ${member.paymentStatus.label} (${DateFormat.yMMMd().format(member.paymentDate)})",
+                  member.paymentDate == null
+                      ? "Payment: ${member.paymentStatus.label}"
+                      : "Payment: ${member.paymentStatus.label} (${DateFormat.yMMMd().format(member.paymentDate!)})",
                   style: TextStyle(
                     fontSize: 12,
                     color: member.paymentStatus == MemberPaymentStatus.due
@@ -253,11 +321,16 @@ class _MemberListView extends StatelessWidget {
                     onSelected: (value) {
                       if (value == "delete") onDelete(member);
                       if (value == "update") onUpdate(member);
+                      if (value == "payment") onRecordPayment(member);
                     },
                     itemBuilder: (_) => [
                       const PopupMenuItem(
                         value: "update",
                         child: Text("Update"),
+                      ),
+                      const PopupMenuItem(
+                        value: "payment",
+                        child: Text("Record Payment"),
                       ),
                       const PopupMenuItem(
                         value: "delete",

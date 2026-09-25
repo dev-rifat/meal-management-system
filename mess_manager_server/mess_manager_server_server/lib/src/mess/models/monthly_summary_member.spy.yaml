@@ -1,0 +1,9 @@
+### One mess member's row within a month's summary. Not a table — built
+### by `DashboardEndpoint.getMonthlySummary`.
+class: MonthlySummaryMember
+fields:
+  memberId: int
+  name: String
+  totalMeal: double
+  totalCost: double
+  paid: double
